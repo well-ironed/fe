@@ -8,7 +8,8 @@ defmodule Fb.MixProject do
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      docs: docs()
+      docs: docs(),
+      preferred_cli_env: [dialyzer: :test]
     ]
   end
 
@@ -27,7 +28,7 @@ defmodule Fb.MixProject do
 
   defp deps do
     [
-      {:dialyxir, "~> 0.5.1", only: :dev, runtime: false},
+      {:dialyxir, "~> 0.5.1", only: :test, runtime: false},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false}
     ]
   end
