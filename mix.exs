@@ -1,9 +1,9 @@
-defmodule Fb.MixProject do
+defmodule FE.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :fb,
+      app: :fe,
       version: "0.1.0",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,

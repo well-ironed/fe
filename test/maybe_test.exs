@@ -1,8 +1,8 @@
-defmodule FB.MaybeTest do
+defmodule FE.MaybeTest do
   use ExUnit.Case, async: true
-  doctest FB.Maybe
+  doctest FE.Maybe
 
-  alias FB.Maybe
+  alias FE.Maybe
 
   test "nothing can be created with a constructor" do
     assert Maybe.nothing() == :nothing

@@ -6,14 +6,14 @@ jobs:
         environment:
           MIX_ENV: test
 
-    working_directory: ~/fb
+    working_directory: ~/fe
 
     steps: 
       - checkout 
 
       - restore_cache:
           keys:
-              - fb-plt-{{ checksum "mix.lock" }}
+              - fe-plt-{{ checksum "mix.lock" }}
 
       - run: mix local.hex --force 
       - run: mix local.rebar --force
@@ -23,6 +23,6 @@ jobs:
 
       - run: mix dialyzer
       - save_cache:
-          key: fb-plt-{{ checksum "mix.lock" }}
+          key: fe-plt-{{ checksum "mix.lock" }}
           paths:
               - "_build/test"

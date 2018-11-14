@@ -1,4 +1,4 @@
-# Elixir Functional Bits
+# Functional Elixir
 
 This library is a collection of useful data types brought to Elixir
 from other functional languages.
