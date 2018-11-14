@@ -30,13 +30,13 @@ defmodule FE.MaybeTest do
     assert Maybe.map(Maybe.just("bar"), &String.length/1) == Maybe.just(3)
   end
 
-  test "with_default returns default value if nothing is passed" do
-    assert Maybe.with_default(Maybe.nothing(), :default) == :default
+  test "unwrap_or returns default value if nothing is passed" do
+    assert Maybe.unwrap_or(Maybe.nothing(), :default) == :default
   end
 
-  test "with_default returns just value if just is passed" do
-    assert Maybe.with_default(Maybe.just(5), nil) == 5
-    assert Maybe.with_default(Maybe.just("five"), :ok) == "five"
+  test "unwrap_or returns just value if just is passed" do
+    assert Maybe.unwrap_or(Maybe.just(5), nil) == 5
+    assert Maybe.unwrap_or(Maybe.just("five"), :ok) == "five"
   end
 
   test "and_then returns nothing if nothing is passed" do

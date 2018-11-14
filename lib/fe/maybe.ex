@@ -52,16 +52,16 @@ defmodule FE.Maybe do
   Returns the value stored in a `FE.Maybe` or a provided default if it's a non-value. 
 
   ## Examples
-      iex> FE.Maybe.with_default(FE.Maybe.nothing(), :default)
+      iex> FE.Maybe.unwrap_or(FE.Maybe.nothing(), :default)
       :default
 
-      iex> FE.Maybe.with_default(FE.Maybe.just(:value), :default)
+      iex> FE.Maybe.unwrap_or(FE.Maybe.just(:value), :default)
       :value
   """
-  @spec with_default(t(a), a) :: a when a: var
-  def with_default(maybe, default)
-  def with_default(:nothing, default), do: default
-  def with_default({:just, value}, _), do: value
+  @spec unwrap_or(t(a), a) :: a when a: var
+  def unwrap_or(maybe, default)
+  def unwrap_or(:nothing, default), do: default
+  def unwrap_or({:just, value}, _), do: value
 
   @doc """
   Applies value of `FE.Maybe` to a provided function and returns its return value,
