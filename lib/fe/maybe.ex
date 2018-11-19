@@ -68,7 +68,7 @@ defmodule FE.Maybe do
   that should be of `FE.Maybe` type.
 
   Useful for chaining together a computation consisting of multiple steps, each of which
-  takes `FE.Maybe` as an argument and returns a `FE.Maybe`.
+  takes value wrapped in `FE.Maybe` as an argument and returns a `FE.Maybe`.
 
   ## Examples
       iex> FE.Maybe.and_then(FE.Maybe.nothing(), fn s -> FE.Maybe.just(String.length(s)) end)
