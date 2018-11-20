@@ -4,6 +4,10 @@ defmodule FE.Maybe do
   """
   @type t(a) :: {:just, a} | :nothing
 
+  defmodule Error do
+    defexception [:message]
+  end
+
   @doc """
   Creates a `FE.Maybe` representing a non-value.
   """
@@ -62,6 +66,18 @@ defmodule FE.Maybe do
   def unwrap_or(maybe, default)
   def unwrap_or(:nothing, default), do: default
   def unwrap_or({:just, value}, _), do: value
+
+  @doc """
+  Returns the value stored in a `FE.Maybe`, raises an `FE.Maybe.Error` if a non-value is passed.
+
+  ## Examples
+      iex> FE.Maybe.unwrap!(FE.Maybe.just(:value))
+      :value
+  """
+  @spec unwrap!(t(a)) :: a | no_return() when a: var
+  def unwrap!(maybe)
+  def unwrap!({:just, value}), do: value
+  def unwrap!(:nothing), do: raise(Error, "unwrapping Maybe that has no value")
 
   @doc """
   Applies value of `FE.Maybe` to a provided function and returns its return value,

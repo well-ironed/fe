@@ -39,6 +39,17 @@ defmodule FE.MaybeTest do
     assert Maybe.unwrap_or(Maybe.just("five"), :ok) == "five"
   end
 
+  test "unwrap! returns just value is just is passed" do
+    assert Maybe.unwrap!(Maybe.just(3)) == 3
+    assert Maybe.unwrap!(Maybe.just("three")) == "three"
+  end
+
+  test "unwrap! raises an exception if non-value is passed" do
+    assert_raise FE.Maybe.Error, "unwrapping Maybe that has no value", fn ->
+      Maybe.unwrap!(Maybe.nothing())
+    end
+  end
+
   test "and_then returns nothing if nothing is passed" do
     assert Maybe.and_then(Maybe.nothing(), fn _ -> Maybe.nothing() end) == Maybe.nothing()
   end
