@@ -4,11 +4,11 @@ defmodule FE.ResultTest do
 
   alias FE.Result
 
-  test "ok value can be created with a constructor" do
+  test "ok can be created with a constructor" do
     assert Result.ok(:foo) == {:ok, :foo}
   end
 
-  test "error value can be created with a constructor" do
+  test "error can be created with a constructor" do
     assert Result.error("bar") == {:error, "bar"}
   end
 
@@ -18,6 +18,26 @@ defmodule FE.ResultTest do
 
   test "mapping over an ok value applies function to value" do
     assert Result.map(Result.ok(2), &(&1 * 5)) == Result.ok(10)
+  end
+
+  test "unwrap_or returns default value if an error is passed" do
+    assert Result.unwrap_or(Result.error(:foo), :default) == :default
+    assert Result.unwrap_or(Result.error("bar"), nil) == nil
+  end
+
+  test "unwrap_or returns wrapped value if an ok is passed" do
+    assert Result.unwrap_or(Result.ok(:bar), :default) == :bar
+    assert Result.unwrap_or(Result.ok(3), :x) == 3
+  end
+
+  test "unwrap! returns wrapped value if an ok is passed" do
+    assert Result.unwrap!(Result.ok(:foo)) == :foo
+  end
+
+  test "unwrap! raises an exception if an error is passed" do
+    assert_raise FE.Result.Error, "unwrapping Result with an error", fn ->
+      Result.unwrap!(Result.error(:bar))
+    end
   end
 
   test "and_then returns error if an error is passed" do

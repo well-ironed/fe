@@ -5,6 +5,10 @@ defmodule FE.Result do
   @type t(a, b) :: {:ok, a} | {:error, b}
   @type t(a) :: t(a, any)
 
+  defmodule Error do
+    defexception [:message]
+  end
+
   @doc """
   Creates a `FE.Result` representing a successful output of a computation.
   """
@@ -31,6 +35,29 @@ defmodule FE.Result do
   def map(result, f)
   def map({:error, _} = error, _), do: error
   def map({:ok, value}, f), do: {:ok, f.(value)}
+
+  @doc """
+  Returns the success value stored in a `FE.Result` or a provided default value if an error is passed.
+
+  ## Examples
+      iex> FE.Result.unwrap_or(FE.Result.error("foo"), "default")
+      "default"
+
+      iex> FE.Result.unwrap_or(FE.Result.ok("bar"), "default")
+      "bar"
+  """
+  @spec unwrap_or(t(a), a) :: a when a: var
+  def unwrap_or(result, default)
+  def unwrap_or({:error, _}, default), do: default
+  def unwrap_or({:ok, value}, _), do: value
+
+  @doc """
+  Returns the success value stored in a `FE.Result`, raises an `FE.Result.Error` if an error is passed.
+  """
+  @spec unwrap!(t(a)) :: a | no_return() when a: var
+  def unwrap!(result)
+  def unwrap!({:ok, value}), do: value
+  def unwrap!({:error, _}), do: raise(Error, "unwrapping Result with an error")
 
   @doc """
   Applies success value of a `FE.Result` to a provided function and returns its return value,

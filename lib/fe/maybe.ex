@@ -68,7 +68,7 @@ defmodule FE.Maybe do
   def unwrap_or({:just, value}, _), do: value
 
   @doc """
-  Returns the value stored in a `FE.Maybe`, raises an `FE.Maybe.Error` if a non-value is passed.
+  Returns the value stored in a `FE.Maybe`, raises a `FE.Maybe.Error` if a non-value is passed.
 
   ## Examples
       iex> FE.Maybe.unwrap!(FE.Maybe.just(:value))
