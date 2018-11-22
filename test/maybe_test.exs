@@ -84,7 +84,7 @@ defmodule FE.MaybeTest do
     assert Maybe.fold(Maybe.just(5), []) == Maybe.just(5)
   end
 
-  test "fold over a single function applies it if just is passed" do
+  test "fold over a single function applies it to the just value passed" do
     assert Maybe.fold(Maybe.just(10), [&Maybe.just(&1 + 5)]) == Maybe.just(15)
     assert Maybe.fold(Maybe.just(20), [fn _ -> Maybe.nothing() end]) == Maybe.nothing()
   end

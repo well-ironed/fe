@@ -80,4 +80,37 @@ defmodule FE.Result do
   def and_then(result, f)
   def and_then({:error, _} = error, _), do: error
   def and_then({:ok, value}, f), do: f.(value)
+
+  @doc """
+  Applies success value of `FE.Result` to the first provided function, that should return a `FE.Result` type.
+  Then applies the success value of returned `FE.Result` to the second function and so on.
+  Stops if any of the functions on the list returns an error.
+
+  Works like a chain of `and_then`s, but it's useful in case that steps need to be pre-computed.
+
+  ## Examples
+      iex> FE.Result.fold(FE.Result.error(:error), [])
+      FE.Result.error(:error)
+
+      iex> FE.Result.fold(FE.Result.ok(5), [])
+      FE.Result.ok(5)
+
+      iex> FE.Result.fold(FE.Result.error(:foo), [&FE.Result.ok(&1 * 2), &FE.Result.ok(&1 + 3)])
+      FE.Result.error(:foo)
+
+      iex> FE.Result.fold(FE.Result.ok(5), [&FE.Result.ok(&1 * 2), &FE.Result.ok(&1 + 3)])
+      FE.Result.ok(13)
+
+      iex> FE.Result.fold(FE.Result.ok(5), [&FE.Result.ok(&1 * 2), &FE.Result.ok(&1 + 3), fn _ -> FE.Result.error(:bar) end])
+      FE.Result.error(:bar)
+  """
+  @spec fold(t(a, b), [(a -> t(a, b))]) :: t(a, b) when a: var, b: var
+  def fold(result, fs) do
+    Enum.reduce_while(fs, result, fn f, acc ->
+      case and_then(acc, f) do
+        {:ok, _} = ok -> {:cont, ok}
+        {:error, _} = error -> {:halt, error}
+      end
+    end)
+  end
 end
