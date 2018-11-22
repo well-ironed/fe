@@ -44,7 +44,7 @@ defmodule FE.MaybeTest do
     assert Maybe.unwrap!(Maybe.just("three")) == "three"
   end
 
-  test "unwrap! raises an exception if non-value is passed" do
+  test "unwrap! raises an exception if nothing is passed" do
     assert_raise FE.Maybe.Error, "unwrapping Maybe that has no value", fn ->
       Maybe.unwrap!(Maybe.nothing())
     end
@@ -77,5 +77,38 @@ defmodule FE.MaybeTest do
       |> Maybe.and_then(&Maybe.just(&1 - 4))
 
     assert result == Maybe.just(5)
+  end
+
+  test "fold over an empty list returns passed maybe" do
+    assert Maybe.fold(Maybe.nothing(), []) == Maybe.nothing()
+    assert Maybe.fold(Maybe.just(5), []) == Maybe.just(5)
+  end
+
+  test "fold over a single function applies it if just is passed" do
+    assert Maybe.fold(Maybe.just(10), [&Maybe.just(&1 + 5)]) == Maybe.just(15)
+    assert Maybe.fold(Maybe.just(20), [fn _ -> Maybe.nothing() end]) == Maybe.nothing()
+  end
+
+  test "fold over a single function is not applied if nothing is passed" do
+    assert Maybe.fold(Maybe.nothing(), [&Maybe.just(&1 + 5)]) == Maybe.nothing()
+  end
+
+  test "fold over functions returns last if there is no nothing on the way" do
+    assert Maybe.fold(
+             Maybe.just(1),
+             [&Maybe.just(&1 + 1), &Maybe.just(&1 * 5), &Maybe.just(&1 - 3)]
+           ) == Maybe.just(7)
+  end
+
+  test "fold over functions stops on first nothing" do
+    assert Maybe.fold(
+             Maybe.just(1),
+             [
+               &Maybe.just(&1 + 1),
+               &Maybe.just(&1 * 5),
+               fn _ -> Maybe.nothing() end,
+               &Maybe.just(&1 - 3)
+             ]
+           ) == Maybe.nothing()
   end
 end

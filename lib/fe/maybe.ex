@@ -100,4 +100,37 @@ defmodule FE.Maybe do
   def and_then(maybe, f)
   def and_then(:nothing, _), do: nothing()
   def and_then({:just, value}, f), do: f.(value)
+
+  @doc """
+  Applies value of `FE.Maybe` to the first provided function, that should return a `FE.Maybe` type.
+  Then applies the value of returned `FE.Maybe` to the second function and so on.
+  Stops if any of the functions on the list returns a nothing.
+
+  Works like a chain of `and_then`s, but it's useful in case that steps need to be pre-computed.
+
+  ## Examples
+      iex> FE.Maybe.fold(FE.Maybe.nothing(), [])
+      FE.Maybe.nothing()
+
+      iex> FE.Maybe.fold(FE.Maybe.just(5), [])
+      FE.Maybe.just(5)
+
+      iex> FE.Maybe.fold(FE.Maybe.nothing(), [&FE.Maybe.just(&1 * 2), &FE.Maybe.just(&1 + 3)])
+      FE.Maybe.nothing()
+
+      iex> FE.Maybe.fold(FE.Maybe.just(5), [&FE.Maybe.just(&1 * 2), &FE.Maybe.just(&1 + 3)])
+      FE.Maybe.just(13)
+
+      iex> FE.Maybe.fold(FE.Maybe.just(5), [&FE.Maybe.just(&1 * 2), &FE.Maybe.just(&1 + 3), fn _ -> FE.Maybe.nothing() end])
+      FE.Maybe.nothing()
+  """
+  @spec fold(t(a), [(a -> t(a))]) :: t(a) when a: var
+  def fold(maybe, fs) do
+    Enum.reduce_while(fs, maybe, fn f, acc ->
+      case and_then(acc, f) do
+        {:just, _} = just -> {:cont, just}
+        :nothing -> {:halt, :nothing}
+      end
+    end)
+  end
 end
