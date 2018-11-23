@@ -39,6 +39,17 @@ defmodule FE.MaybeTest do
     assert Maybe.unwrap_or(Maybe.just("five"), :ok) == "five"
   end
 
+  test "unwrap! returns just value is just is passed" do
+    assert Maybe.unwrap!(Maybe.just(3)) == 3
+    assert Maybe.unwrap!(Maybe.just("three")) == "three"
+  end
+
+  test "unwrap! raises an exception if non-value is passed" do
+    assert_raise FE.Maybe.Error, "unwrapping Maybe that has no value", fn ->
+      Maybe.unwrap!(Maybe.nothing())
+    end
+  end
+
   test "and_then returns nothing if nothing is passed" do
     assert Maybe.and_then(Maybe.nothing(), fn _ -> Maybe.nothing() end) == Maybe.nothing()
   end
@@ -46,5 +57,25 @@ defmodule FE.MaybeTest do
   test "and_then applies function if just is passed" do
     assert Maybe.and_then(Maybe.just(5), fn x -> Maybe.just(x + 10) end) == Maybe.just(15)
     assert Maybe.and_then(Maybe.just("5"), fn _ -> Maybe.nothing() end) == Maybe.nothing()
+  end
+
+  test "and_then chain stops on first nothing" do
+    result =
+      Maybe.just(1)
+      |> Maybe.and_then(&Maybe.just(&1 + 2))
+      |> Maybe.and_then(fn _ -> Maybe.nothing() end)
+      |> Maybe.and_then(&Maybe.just(&1 - 4))
+
+    assert result == Maybe.nothing()
+  end
+
+  test "and_then chain returns last if there is no nothing on the way" do
+    result =
+      Maybe.just(1)
+      |> Maybe.and_then(&Maybe.just(&1 + 2))
+      |> Maybe.and_then(&Maybe.just(&1 * 3))
+      |> Maybe.and_then(&Maybe.just(&1 - 4))
+
+    assert result == Maybe.just(5)
   end
 end
