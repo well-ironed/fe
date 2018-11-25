@@ -103,7 +103,7 @@ defmodule FE.Maybe do
 
   @doc """
   Applies first element from the provided list and the value of the provided
-  `FE.Maybe`to the provided function, that should return a `FE.Maybe`.
+  `FE.Maybe` to the provided function, that should return a `FE.Maybe`.
   Then applies the second element from the list and the value of the
   returned `FE.Maybe` to the function and so on.
 
