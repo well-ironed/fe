@@ -102,32 +102,38 @@ defmodule FE.Maybe do
   def and_then({:just, value}, f), do: f.(value)
 
   @doc """
-  Applies value of `FE.Maybe` to the first provided function, that should return a `FE.Maybe` type.
-  Then applies the value of returned `FE.Maybe` to the second function and so on.
-  Stops if any of the functions on the list returns a nothing.
+  Applies first element from the provided list and the value of the provided
+  `FE.Maybe`to the provided function, that should return a `FE.Maybe`.
+  Then applies the second element from the list and the value of the
+  returned `FE.Maybe` to the function and so on.
 
-  Works like a chain of `and_then`s, but it's useful in case that steps need to be pre-computed.
+  Returns last value returned by the function.
+
+  Stops and returns nothing if at any moment the function returns a nothing.
 
   ## Examples
-      iex> FE.Maybe.fold(FE.Maybe.nothing(), [])
+      iex> FE.Maybe.fold(FE.Maybe.nothing(), [], &FE.Maybe.just(&1))
       FE.Maybe.nothing()
 
-      iex> FE.Maybe.fold(FE.Maybe.just(5), [])
+      iex> FE.Maybe.fold(FE.Maybe.just(5), [], &FE.Maybe.just(&1))
       FE.Maybe.just(5)
 
-      iex> FE.Maybe.fold(FE.Maybe.nothing(), [&FE.Maybe.just(&1 * 2), &FE.Maybe.just(&1 + 3)])
+      iex> FE.Maybe.fold(FE.Maybe.nothing(), [1, 2], &FE.Maybe.just(&1 + &2))
       FE.Maybe.nothing()
 
-      iex> FE.Maybe.fold(FE.Maybe.just(5), [&FE.Maybe.just(&1 * 2), &FE.Maybe.just(&1 + 3)])
-      FE.Maybe.just(13)
+      iex> FE.Maybe.fold(FE.Maybe.just(5), [6, 7], &FE.Maybe.just(&1 + &2))
+      FE.Maybe.just(18)
 
-      iex> FE.Maybe.fold(FE.Maybe.just(5), [&FE.Maybe.just(&1 * 2), &FE.Maybe.just(&1 + 3), fn _ -> FE.Maybe.nothing() end])
+      iex> FE.Maybe.fold(FE.Maybe.just(5), [6, 7, 8], fn
+      ...>   _, 18 -> FE.Maybe.nothing()
+      ...>   x, y -> FE.Maybe.just(x+y)
+      ...> end)
       FE.Maybe.nothing()
   """
-  @spec fold(t(a), [(a -> t(a))]) :: t(a) when a: var
-  def fold(maybe, fs) do
-    Enum.reduce_while(fs, maybe, fn f, acc ->
-      case and_then(acc, f) do
+  @spec fold(t(a), [a], (a, a -> t(a))) :: t(a) when a: var
+  def fold(maybe, elems, f) do
+    Enum.reduce_while(elems, maybe, fn elem, acc ->
+      case and_then(acc, fn value -> f.(elem, value) end) do
         {:just, _} = just -> {:cont, just}
         :nothing -> {:halt, :nothing}
       end

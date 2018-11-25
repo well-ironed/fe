@@ -80,35 +80,27 @@ defmodule FE.MaybeTest do
   end
 
   test "fold over an empty list returns passed maybe" do
-    assert Maybe.fold(Maybe.nothing(), []) == Maybe.nothing()
-    assert Maybe.fold(Maybe.just(5), []) == Maybe.just(5)
+    assert Maybe.fold(Maybe.nothing(), [], &Maybe.just(&1 + &2)) == Maybe.nothing()
+    assert Maybe.fold(Maybe.just(5), [], &Maybe.just(&1 + &2)) == Maybe.just(5)
   end
 
-  test "fold over a single function applies it to the just value passed" do
-    assert Maybe.fold(Maybe.just(10), [&Maybe.just(&1 + 5)]) == Maybe.just(15)
-    assert Maybe.fold(Maybe.just(20), [fn _ -> Maybe.nothing() end]) == Maybe.nothing()
+  test "fold over a single value applies function to it if the just value passed" do
+    assert Maybe.fold(Maybe.just(10), [5], &Maybe.just(&1 + &2)) == Maybe.just(15)
+    assert Maybe.fold(Maybe.just(20), [3], fn _, _ -> Maybe.nothing() end) == Maybe.nothing()
   end
 
-  test "fold over a single function is not applied if nothing is passed" do
-    assert Maybe.fold(Maybe.nothing(), [&Maybe.just(&1 + 5)]) == Maybe.nothing()
+  test "fold over a single value doesn't apply function if nothing is passed" do
+    assert Maybe.fold(Maybe.nothing(), [5], &Maybe.just(&1 + &2)) == Maybe.nothing()
   end
 
-  test "fold over functions returns last if there is no nothing on the way" do
-    assert Maybe.fold(
-             Maybe.just(1),
-             [&Maybe.just(&1 + 1), &Maybe.just(&1 * 5), &Maybe.just(&1 - 3)]
-           ) == Maybe.just(7)
+  test "fold over values returns last value returned by function if it returns only justs" do
+    assert Maybe.fold(Maybe.just(1), [2, 3, 4], &Maybe.just(&1 * &2)) == Maybe.just(24)
   end
 
-  test "fold over functions stops on first nothing" do
-    assert Maybe.fold(
-             Maybe.just(1),
-             [
-               &Maybe.just(&1 + 1),
-               &Maybe.just(&1 * 5),
-               fn _ -> Maybe.nothing() end,
-               &Maybe.just(&1 - 3)
-             ]
-           ) == Maybe.nothing()
+  test "fold over values returns nothing when the function returns it" do
+    assert Maybe.fold(Maybe.just(1), [2, 3, 4], fn
+             _, 6 -> Maybe.nothing()
+             x, y -> Maybe.just(x + y)
+           end) == Maybe.nothing()
   end
 end
