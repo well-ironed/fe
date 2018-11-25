@@ -130,7 +130,7 @@ defmodule FE.Maybe do
       ...> end)
       FE.Maybe.nothing()
   """
-  @spec fold(t(a), [a], (a, a -> t(a))) :: t(a) when a: var
+  @spec fold(t(a), [b], (b, a -> t(a))) :: t(a) when a: var, b: var
   def fold(maybe, elems, f) do
     Enum.reduce_while(elems, maybe, fn elem, acc ->
       case and_then(acc, fn value -> f.(elem, value) end) do
