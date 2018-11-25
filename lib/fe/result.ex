@@ -80,4 +80,43 @@ defmodule FE.Result do
   def and_then(result, f)
   def and_then({:error, _} = error, _), do: error
   def and_then({:ok, value}, f), do: f.(value)
+
+  @doc """
+  Applies first element from the provided list and the success value of the provided
+  `FE.Result` to the provided function, that should return a `FE.Result`.
+  Then applies the second element from the list and the value of the
+  returned `FE.result` to the function and so on.
+
+  Returns last value returned by the function.
+
+  If at any moment the function returns an error the folding stops and returns the error.
+
+  ## Examples
+      iex> FE.Result.fold(FE.Result.error(:error), [], &FE.Result.ok(&1 + &2))
+      FE.Result.error(:error)
+
+      iex> FE.Result.fold(FE.Result.ok(5), [], &FE.Result.ok(&1 + &2))
+      FE.Result.ok(5)
+
+      iex> FE.Result.fold(FE.Result.error(:foo), [1, 2], &FE.Result.ok(&1 + &2))
+      FE.Result.error(:foo)
+
+      iex> FE.Result.fold(FE.Result.ok(5), [1, 2, 3], &FE.Result.ok(&1 * &2))
+      FE.Result.ok(30)
+
+      iex> FE.Result.fold(FE.Result.ok(5), [1, 2, 3], fn
+      ...> _, 10 -> FE.Result.error("it's a ten!")
+      ...> x, y  -> FE.Result.ok(x * y)
+      ...> end)
+      FE.Result.error("it's a ten!")
+  """
+  @spec fold(t(a, b), [c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
+  def fold(result, elems, f) do
+    Enum.reduce_while(elems, result, fn elem, acc ->
+      case and_then(acc, fn value -> f.(elem, value) end) do
+        {:ok, _} = ok -> {:cont, ok}
+        {:error, _} = error -> {:halt, error}
+      end
+    end)
+  end
 end

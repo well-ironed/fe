@@ -100,4 +100,43 @@ defmodule FE.Maybe do
   def and_then(maybe, f)
   def and_then(:nothing, _), do: nothing()
   def and_then({:just, value}, f), do: f.(value)
+
+  @doc """
+  Applies first element from the provided list and the value of the provided
+  `FE.Maybe` to the provided function, that should return a `FE.Maybe`.
+  Then applies the second element from the list and the value of the
+  returned `FE.Maybe` to the function and so on.
+
+  Returns last value returned by the function.
+
+  Stops and returns nothing if at any moment the function returns a nothing.
+
+  ## Examples
+      iex> FE.Maybe.fold(FE.Maybe.nothing(), [], &FE.Maybe.just(&1))
+      FE.Maybe.nothing()
+
+      iex> FE.Maybe.fold(FE.Maybe.just(5), [], &FE.Maybe.just(&1))
+      FE.Maybe.just(5)
+
+      iex> FE.Maybe.fold(FE.Maybe.nothing(), [1, 2], &FE.Maybe.just(&1 + &2))
+      FE.Maybe.nothing()
+
+      iex> FE.Maybe.fold(FE.Maybe.just(5), [6, 7], &FE.Maybe.just(&1 + &2))
+      FE.Maybe.just(18)
+
+      iex> FE.Maybe.fold(FE.Maybe.just(5), [6, 7, 8], fn
+      ...>   _, 18 -> FE.Maybe.nothing()
+      ...>   x, y -> FE.Maybe.just(x+y)
+      ...> end)
+      FE.Maybe.nothing()
+  """
+  @spec fold(t(a), [b], (b, a -> t(a))) :: t(a) when a: var, b: var
+  def fold(maybe, elems, f) do
+    Enum.reduce_while(elems, maybe, fn elem, acc ->
+      case and_then(acc, fn value -> f.(elem, value) end) do
+        {:just, _} = just -> {:cont, just}
+        :nothing -> {:halt, :nothing}
+      end
+    end)
+  end
 end

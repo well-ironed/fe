@@ -67,4 +67,32 @@ defmodule FE.ResultTest do
 
     assert result == Result.ok(5)
   end
+
+  test "fold over an empty list returns passed result" do
+    baz = fn _, _ -> Result.ok(:baz) end
+    assert Result.fold(Result.ok(:foo), [], baz) == Result.ok(:foo)
+    assert Result.fold(Result.error(:bar), [], baz) == Result.error(:bar)
+  end
+
+  test "fold over a single value applies function to it if the ok value passed" do
+    assert Result.fold(Result.ok(10), [5], &Result.ok(&1 + &2)) == Result.ok(15)
+
+    assert Result.fold(Result.ok(20), [5], fn _, _ -> Result.error(:bar) end) ==
+             Result.error(:bar)
+  end
+
+  test "fold over a single value doesn't apply function if error is passed" do
+    assert Result.fold(Result.error(:foo), [5], &Result.ok(&1 + &2)) == Result.error(:foo)
+  end
+
+  test "fold over values returns last value returned by function if it returns only oks" do
+    assert Result.fold(Result.ok(1), [2, 3, 4], &Result.ok(&1 * &2)) == Result.ok(24)
+  end
+
+  test "fold over values returns error when the function returns it" do
+    assert Result.fold(Result.ok(1), [2, 3, 4], fn
+             _, 6 -> Result.error("it's a six!")
+             x, y -> Result.ok(x + y)
+           end) == Result.error("it's a six!")
+  end
 end
