@@ -37,6 +37,21 @@ defmodule FE.Result do
   def map({:ok, value}, f), do: {:ok, f.(value)}
 
   @doc """
+  Transforms an errorneous value in a `FE.Result` using a provided function.
+
+  ## Examples
+      iex> FE.Result.map_error(FE.Result.ok("foo"), &String.length/1)
+      FE.Result.ok("foo")
+
+      iex> FE.Result.map_error(FE.Result.error("foo"), &String.length/1)
+      FE.Result.error(3)
+  """
+  @spec map_error(t(a, b), (b -> c)) :: t(a, c) when a: var, b: var, c: var
+  def map_error(result, f)
+  def map_error({:ok, _} = ok, _), do: ok
+  def map_error({:error, value}, f), do: {:error, f.(value)}
+
+  @doc """
   Returns the success value stored in a `FE.Result` or a provided default value if an error is passed.
 
   ## Examples
