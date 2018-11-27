@@ -20,6 +20,14 @@ defmodule FE.ResultTest do
     assert Result.map(Result.ok(2), &(&1 * 5)) == Result.ok(10)
   end
 
+  test "map_error over an ok value returns the same result" do
+    assert Result.map_error(Result.ok(3), fn _ -> :baz end) == Result.ok(3)
+  end
+
+  test "map_error over an error applies function to the error value" do
+    assert Result.map_error(Result.error(2), &(&1 * 3)) == Result.error(6)
+  end
+
   test "unwrap_or returns default value if an error is passed" do
     assert Result.unwrap_or(Result.error(:foo), :default) == :default
     assert Result.unwrap_or(Result.error("bar"), nil) == nil
