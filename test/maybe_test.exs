@@ -56,6 +56,7 @@ defmodule FE.MaybeTest do
 
   test "and_then applies function if just is passed" do
     assert Maybe.and_then(Maybe.just(5), fn x -> Maybe.just(x + 10) end) == Maybe.just(15)
+
     assert Maybe.and_then(Maybe.just("5"), fn _ -> Maybe.nothing() end) == Maybe.nothing()
   end
 
@@ -81,11 +82,13 @@ defmodule FE.MaybeTest do
 
   test "fold over an empty list returns passed maybe" do
     assert Maybe.fold(Maybe.nothing(), [], &Maybe.just(&1 + &2)) == Maybe.nothing()
+
     assert Maybe.fold(Maybe.just(5), [], &Maybe.just(&1 + &2)) == Maybe.just(5)
   end
 
   test "fold over a single value applies function to it if the just value passed" do
     assert Maybe.fold(Maybe.just(10), [5], &Maybe.just(&1 + &2)) == Maybe.just(15)
+
     assert Maybe.fold(Maybe.just(20), [3], fn _, _ -> Maybe.nothing() end) == Maybe.nothing()
   end
 
