@@ -1,5 +1,6 @@
 defmodule ReviewTest do
   use ExUnit.Case, async: true
+  doctest FE.Review
 
   alias FE.Review
 
