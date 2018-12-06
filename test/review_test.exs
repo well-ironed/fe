@@ -2,7 +2,7 @@ defmodule ReviewTest do
   use ExUnit.Case, async: true
   doctest FE.Review
 
-  alias FE.Review
+  alias FE.{Review, Result}
 
   test "accepted can be created with a constructor" do
     assert Review.accepted(:baz) == {:accepted, :baz}
@@ -115,26 +115,27 @@ defmodule ReviewTest do
            end) == Review.issues("foo", [:bar, :baz])
   end
 
-  test "and_then returns rejected if issues is passed and " <>
-         "rejected is returned from function" do
+  test "and_then returns rejected with collected issues " <>
+         "if issues is passed and rejected is returned from function" do
     issues = Review.issues(:a, [:b, :c])
 
-    assert Review.and_then(issues, fn _ -> Review.rejected([:x]) end) == Review.rejected([:x])
+    assert Review.and_then(issues, fn _ -> Review.rejected([:x]) end) ==
+             Review.rejected([:b, :c, :x])
   end
 
-  test "accepted_or_rejected doesn't change accepted value" do
+  test "to_result converts accepted value to an ok value" do
     accepted = Review.accepted(:baz)
-    assert Review.accepted_or_rejected(accepted) == accepted
+    assert Review.to_result(accepted) == Result.ok(:baz)
   end
 
-  test "accepted_or_rejected doesn't change rejected issues" do
-    rejected = Review.rejected(["foo", "bar"])
-    assert Review.accepted_or_rejected(rejected) == rejected
+  test "to_result converts rejected to an error with all the issues" do
+    rejected = Review.rejected([:a, :b, :c])
+    assert Review.to_result(rejected) == Result.error([:a, :b, :c])
   end
 
-  test "accepted_or_rejected transform it to rejected if issues are passed" do
-    issues = Review.issues(:a, [:b, :c, :d])
-    assert Review.accepted_or_rejected(issues) == Review.rejected([:b, :c, :d])
+  test "to_result converts issues to an error with all the issues" do
+    issues = Review.issues(1, [:one, "one", 'one'])
+    assert Review.to_result(issues) == Result.error([:one, "one", 'one'])
   end
 
   test "and_then chain collects issues on the way" do
@@ -147,14 +148,14 @@ defmodule ReviewTest do
     assert result == Review.issues(5, [2, 3, 20, 16])
   end
 
-  test "and_then chain stops on the first reject" do
+  test "and_then chain stops on the first rejected and collects all issues on the way" do
     result =
       Review.accepted(1)
       |> Review.and_then(&Review.issues(&1, [&1 * 2]))
-      |> Review.accepted_or_rejected()
-      |> Review.and_then(&Review.issues(&1, [&1 * 5]))
+      |> Review.and_then(&Review.rejected([&1 * 3]))
+      |> Review.and_then(&Review.issues(&1, [&1 * 4]))
 
-    assert result == Review.rejected([2])
+    assert result == Review.rejected([2, 3])
   end
 
   test "and_then cain returns last if there are no issues on the way" do

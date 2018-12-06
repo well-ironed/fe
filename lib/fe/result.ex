@@ -125,8 +125,7 @@ defmodule FE.Result do
       ...> end)
       FE.Result.error("it's a ten!")
   """
-  @spec fold(t(a, b), [c], (c, a -> t(a, b))) :: t(a, b)
-        when a: var, b: var, c: var
+  @spec fold(t(a, b), [c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
   def fold(result, elems, f) do
     Enum.reduce_while(elems, result, fn elem, acc ->
       case and_then(acc, fn value -> f.(elem, value) end) do

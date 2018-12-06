@@ -15,6 +15,8 @@ defmodule FE.Review do
 
   @type t(a, b) :: {:accepted, a} | {:issues, a, [b]} | {:rejected, [b]}
 
+  alias FE.Result
+
   defmodule Error do
     defexception [:message]
   end
@@ -121,23 +123,29 @@ defmodule FE.Review do
     do: raise(Error, "unwrapping Review with issues")
 
   @doc """
-  Transforms value with issues into rejected with the same issues.
-  Returns the same passed accepted or rejected `FE.Review`.
+  Transforms `FE.Review` into a `FE.Result`.
+
+  Any accepted value of a `FE.Review` becomes a successful value of a `FE.Result`.
+
+  If there are any issues either in a rejected `FE.Review` or coupled with a value,
+  all the issues become a errornous output of the output `FE.Result`.
 
   ## Examples
-      iex> FE.Review.accepted_or_rejected(FE.Review.issues(1, [2, 3]))
-      FE.Review.rejected([2, 3])
+      iex> FE.Review.to_result(FE.Review.issues(1, [2, 3]))
+      FE.Result.error([2, 3])
 
-      iex> FE.Review.accepted_or_rejected(FE.Review.accepted(4))
-      FE.Review.accepted(4)
+      iex> FE.Review.to_result(FE.Review.accepted(4))
+      FE.Result.ok(4)
 
-      iex> FE.Review.accepted_or_rejected(FE.Review.rejected([5, 6, 7]))
-      FE.Review.rejected([5, 6, 7])
+      iex> FE.Review.to_result(FE.Review.rejected([5, 6, 7]))
+      FE.Result.error([5, 6, 7])
   """
-  @spec accepted_or_rejected(t(a, b)) :: t(a, b) when a: var, b: var
-  def accepted_or_rejected({:accepted, value}), do: accepted(value)
-  def accepted_or_rejected({:rejected, issues}), do: rejected(issues)
-  def accepted_or_rejected({:issues, _, issues}), do: rejected(issues)
+
+  @spec to_result(t(a, b)) :: Result.t(a, [b]) when a: var, b: var
+  def to_result(review)
+  def to_result({:accepted, value}), do: Result.ok(value)
+  def to_result({:rejected, issues}), do: Result.error(issues)
+  def to_result({:issues, _, issues}), do: Result.error(issues)
 
   @doc """
   Applies accepted value of a `FE.Review` to a provided function.
@@ -148,6 +156,8 @@ defmodule FE.Review do
   remain the same.
   If new value with issues is returned, then the value is replaced and the issues
   are appended to the list of current issues.
+  If rejected is returned, then the issues are appended to the list of current issues,
+  if issues were passed.
 
   Useful for chaining together a computation consisting of multiple steps,
   each of which takes either a success value or value with issues wrapped in
@@ -187,7 +197,7 @@ defmodule FE.Review do
     case f.(value) do
       {:accepted, value} -> issues(value, issues)
       {:issues, value, new_issues} -> issues(value, issues ++ new_issues)
-      {:rejected, issues} -> rejected(issues)
+      {:rejected, new_issues} -> rejected(issues ++ new_issues)
     end
   end
 
