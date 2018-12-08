@@ -134,4 +134,26 @@ defmodule FE.Result do
       end
     end)
   end
+
+  @doc """
+  Works like `fold/3`, except that the first element is converted to a success
+  `FE.Result` value and passed as an initial second argument to the provided function.
+
+  ## Examples
+      iex> FE.Result.fold([1], fn _, _ -> FE.Result.error(:one) end)
+      FE.Result.ok(1)
+
+      iex> FE.Result.fold([1, 2, 3], &(FE.Result.ok(&1 + &2)))
+      FE.Result.ok(6)
+
+      iex> FE.Result.fold([1, 2, 3], fn
+      ...>   _, 3 -> FE.Result.error(:three)
+      ...>   x, y -> FE.Result.ok(x + y)
+      ...> end)
+      FE.Result.error(:three)
+  """
+  @spec fold([c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
+  def fold(elems, f)
+  def fold([], _), do: raise(Enum.EmptyError)
+  def fold([head | tail], f), do: fold(ok(head), tail, f)
 end
