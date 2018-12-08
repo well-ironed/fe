@@ -139,4 +139,26 @@ defmodule FE.Maybe do
       end
     end)
   end
+
+  @doc """
+  Works like `fold/3`, except that the first element is converted to a `FE.Maybe`
+  value and passed as an initial second argument to the provided function.
+
+  ## Examples
+      iex> FE.Maybe.fold([1], fn _, _ -> FE.Maybe.nothing() end)
+      FE.Maybe.just(1)
+
+      iex> FE.Maybe.fold([1, 2, 3], &(FE.Maybe.just(&1 + &2)))
+      FE.Maybe.just(6)
+
+      iex> FE.Maybe.fold([1, 2, 3], fn
+      ...>   _, 3 -> FE.Maybe.nothing()
+      ...>   x, y -> FE.Maybe.just(x+y)
+      ...> end)
+      FE.Maybe.nothing()
+  """
+  @spec fold([b], (b, a -> t(a))) :: t(a) when a: var, b: var
+  def fold(elems, f)
+  def fold([], _), do: raise(Enum.EmptyError)
+  def fold([head | tail], f), do: fold(just(head), tail, f)
 end
