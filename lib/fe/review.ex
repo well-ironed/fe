@@ -237,8 +237,7 @@ defmodule FE.Review do
       ...> end)
       FE.Review.rejected(["it's a ten!"])
   """
-  @spec fold(t(a, b), [c], (c, a -> t(a, b))) :: t(a, b)
-        when a: var, b: var, c: var
+  @spec fold(t(a, b), [c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
   def fold(review, elems, f) do
     Enum.reduce_while(elems, review, fn elem, acc ->
       case and_then(acc, fn value -> f.(elem, value) end) do
@@ -248,4 +247,34 @@ defmodule FE.Review do
       end
     end)
   end
+
+  @doc """
+  Works like `fold/3`, except that the first element is converted to an accepted
+  `FE.Review` value and passed as an initial second argument to the provided function.
+
+  ## Examples
+      iex> FE.Review.fold([1], fn _, _ -> FE.Review.rejected([:foo]) end)
+      FE.Review.accepted(1)
+
+      iex> FE.Review.fold([1, 2, 3], &FE.Review.accepted(&1 + &2))
+      FE.Review.accepted(6)
+
+      iex> FE.Review.fold([1, 2, 3], &FE.Review.issues(&1 + &2, [&2]))
+      FE.Review.issues(6, [1, 3])
+
+      iex> FE.Review.fold([1, 2, 3, 4], fn
+      ...>   _, 6 -> FE.Review.rejected(["six"])
+      ...>   x, y -> FE.Review.issues(x + y, [y])
+      ...> end)
+      FE.Review.rejected([1, 3, "six"])
+
+      iex> FE.Review.fold([1, 2, 3, 4], fn
+      ...>   x, 6 -> FE.Review.issues(x + 6, ["six"])
+      ...>   x, y -> FE.Review.accepted(x + y)
+      ...> end)
+      FE.Review.issues(10, ["six"])
+  """
+  @spec fold([c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
+  def fold([], _), do: raise(Enum.EmptyError)
+  def fold([head | tail], f), do: fold(accepted(head), tail, f)
 end
