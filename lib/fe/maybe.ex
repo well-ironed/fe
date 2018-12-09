@@ -103,7 +103,7 @@ defmodule FE.Maybe do
 
   @doc """
   Applies first element from the provided list and the value of the provided
-  `FE.Maybe` to the provided function, that should return a `FE.Maybe`.
+  `FE.Maybe` (base case) to the provided function, that should return a `FE.Maybe`.
   Then applies the second element from the list and the value of the
   returned `FE.Maybe` to the function and so on.
 
@@ -141,8 +141,9 @@ defmodule FE.Maybe do
   end
 
   @doc """
-  Works like `fold/3`, except that the first element is converted to a `FE.Maybe`
-  value and passed as an initial second argument to the provided function.
+  Works like `fold/3`, except that the first element of the provided list is removed
+  from it, wrapped in a `FE.Maybe` and treated as the base case.
+  Then, the fold is executed over the remainder of the provided list.
 
   ## Examples
       iex> FE.Maybe.fold([1], fn _, _ -> FE.Maybe.nothing() end)
