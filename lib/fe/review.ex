@@ -204,9 +204,13 @@ defmodule FE.Review do
   def and_then({:rejected, value}, _), do: {:rejected, value}
 
   @doc """
-  Equivalent to calling chain of `and_then`s where every step executes
-  the provided function, with a single element of the list applied as its first
-  argument.
+  Folds over provided list of elements applying it and current accumulator
+  to the provided function.
+
+  The next accumulator is the same as the result of calling `and_then` with the
+  current accumulator and the provided function.
+
+  The provided `FE.Review` is initial accumulator.
 
   ## Examples
       iex> FE.Review.fold(FE.Review.rejected([:error]), [],
@@ -249,8 +253,10 @@ defmodule FE.Review do
   end
 
   @doc """
-  Works like `fold/3`, except that the first element is converted to an accepted
-  `FE.Review` value and passed as an initial second argument to the provided function.
+  Works like `fold/3`, except that the first element of the provided list is removed
+  from it, converted to an accepted `FE.Review` and treated as the initial accumulator.
+
+  Then, fold is executed over the remainder of the provided list.
 
   ## Examples
       iex> FE.Review.fold([1], fn _, _ -> FE.Review.rejected([:foo]) end)

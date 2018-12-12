@@ -97,14 +97,15 @@ defmodule FE.Result do
   def and_then({:ok, value}, f), do: f.(value)
 
   @doc """
-  Applies first element from the provided list and the success value of the provided
-  `FE.Result` to the provided function, that should return a `FE.Result`.
-  Then applies the second element from the list and the value of the
-  returned `FE.result` to the function and so on.
+  Folds over provided list of elements applying it and current accumulator
+  to the provided function.
+
+  The provided function returns a new accumulator, that should be a `FE.Result`.
+  The provided `FE.Result` is the initial accumulator.
 
   Returns last value returned by the function.
 
-  If at any moment the function returns an error the folding stops and returns the error.
+  Stops and returns error if at any moment the function returns error.
 
   ## Examples
       iex> FE.Result.fold(FE.Result.error(:error), [], &FE.Result.ok(&1 + &2))
@@ -136,8 +137,10 @@ defmodule FE.Result do
   end
 
   @doc """
-  Works like `fold/3`, except that the first element is converted to a success
-  `FE.Result` value and passed as an initial second argument to the provided function.
+  Works like `fold/3`, except that the first element of the provided list is removed
+  from it, converted to a success `FE.Result` and treated as the initial accumulator.
+
+  Then, fold is executed over the remainder of the provided list.
 
   ## Examples
       iex> FE.Result.fold([1], fn _, _ -> FE.Result.error(:one) end)
