@@ -1,4 +1,4 @@
-defmodule ReviewTest do
+defmodule FE.ReviewTest do
   use ExUnit.Case, async: true
   doctest FE.Review
 
@@ -95,7 +95,7 @@ defmodule ReviewTest do
 
   test "and_then returns rejected if rejected is passed" do
     rejected = Review.rejected([123])
-    assert Review.and_then(rejected, fn x -> Review.ok(x + 2) end) == rejected
+    assert Review.and_then(rejected, fn x -> Review.accepted(x + 2) end) == rejected
   end
 
   test "and_then returns concat of issues if issues are passed and " <>
@@ -168,8 +168,8 @@ defmodule ReviewTest do
     assert result == Review.accepted(5)
   end
 
-  test "fold over an empty list returns accepted review" do
-    f = fn _, _ -> Review.ok(:qux) end
+  test "fold/3 over an empty list returns whatever is passed as initial review" do
+    f = fn _, _ -> Review.accepted(:qux) end
     assert Review.fold(Review.accepted(:foo), [], f) == Review.accepted(:foo)
 
     assert Review.fold(Review.issues(:bar, [1, 2]), [], f) == Review.issues(:bar, [1, 2])
@@ -177,40 +177,72 @@ defmodule ReviewTest do
     assert Review.fold(Review.rejected([:baz]), [], f) == Review.rejected([:baz])
   end
 
-  test "fold over a single value doesn't apply function if rejected is passed" do
+  test "fold/3 over a single value doesn't apply function if rejected is passed" do
     assert Review.fold(Review.rejected([:a]), [5], &Review.accepted(&1 + &2)) ==
              Review.rejected([:a])
   end
 
-  test "fold over a single value applies function if issues are passed" do
+  test "fold/3 over a single value applies function if issues are passed" do
     assert Review.fold(Review.issues(1, [:a]), [2], &Review.accepted(&1 + &2)) ==
              Review.issues(3, [:a])
 
     assert Review.fold(Review.accepted(1), [5], &Review.accepted(&1 - &2)) == Review.accepted(4)
   end
 
-  test "fold over a single value applies function and collects issues" do
+  test "fold/3 over a single value applies function and collects issues" do
     assert Review.fold(Review.issues(1, [:a, :b]), [2], &Review.issues(&1 - &2, [:c, :d])) ==
              Review.issues(1, [:a, :b, :c, :d])
   end
 
-  test "fold over values returns last value returned by function if everything is accepted" do
+  test "fold/3 over values returns last value returned by function if everything is accepted" do
     assert Review.fold(Review.accepted(1), [2, 3, 4], &Review.accepted(&1 * &2)) ==
              Review.accepted(24)
   end
 
-  test "fold over values returns rejected when the function returns it" do
+  test "fold/3 over values returns rejected when the function returns it" do
     assert Review.fold(Review.accepted(1), [2, 3, 4], fn
              _, 6 -> Review.rejected(["it's", "a", "six!"])
              x, y -> Review.accepted(x + y)
            end) == Review.rejected(["it's", "a", "six!"])
   end
 
-  test "fold over values collects issues returned by the function" do
+  test "fold/3 over values collects issues returned by the function" do
     assert Review.fold(Review.accepted(1), [2, 3, 4, 5], fn
              x, 3 -> Review.issues(x + 3, ["three"])
              x, 10 -> Review.issues(x + 10, ["ten"])
              x, y -> Review.accepted(x + y)
            end) == Review.issues(15, ["three", "ten"])
+  end
+
+  test "fold/2 over an empty list raises an EmptyError" do
+    assert_raise Enum.EmptyError,
+                 fn -> Review.fold([], fn _, _ -> Review.accepted(:foo) end) end
+  end
+
+  test "fold/2 over a single value returns this value as an accepted review" do
+    assert Review.fold([1], fn _, _ -> Review.rejected([:foo]) end) == Review.accepted(1)
+  end
+
+  test "fold/2 over values returns last value returned by function if every step is accepted" do
+    assert Review.fold([1, 2, 3, 4, 5], &Review.accepted(&1 + &2)) == Review.accepted(15)
+  end
+
+  test "fold/2 over values returns rejected when the function returns it" do
+    assert Review.fold([1, 2, 3, 4, 5], fn
+             _, 10 -> Review.rejected(["ten", "TEN", "Ten"])
+             x, y -> Review.accepted(x + y)
+           end) == Review.rejected(["ten", "TEN", "Ten"])
+  end
+
+  test "fold/2 over values collects issues returned by function" do
+    assert Review.fold([1, 2, 3, 4, 5], fn x, y -> Review.issues(x + y, [y]) end) ==
+             Review.issues(15, [1, 3, 6, 10])
+  end
+
+  test "fold/2 over values returns collected issues when rejected is returned from function" do
+    assert Review.fold([1, 2, 3, 4, 5], fn
+             _, 10 -> Review.rejected([10])
+             x, y -> Review.issues(x + y, [y])
+           end) == Review.rejected([1, 3, 6, 10])
   end
 end

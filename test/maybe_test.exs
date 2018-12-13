@@ -80,29 +80,48 @@ defmodule FE.MaybeTest do
     assert result == Maybe.just(5)
   end
 
-  test "fold over an empty list returns passed maybe" do
+  test "fold/3 over an empty list returns passed maybe" do
     assert Maybe.fold(Maybe.nothing(), [], &Maybe.just(&1 + &2)) == Maybe.nothing()
 
     assert Maybe.fold(Maybe.just(5), [], &Maybe.just(&1 + &2)) == Maybe.just(5)
   end
 
-  test "fold over a single value applies function to it if the just value passed" do
+  test "fold/3 over a single value applies function to it if the just value passed" do
     assert Maybe.fold(Maybe.just(10), [5], &Maybe.just(&1 + &2)) == Maybe.just(15)
 
     assert Maybe.fold(Maybe.just(20), [3], fn _, _ -> Maybe.nothing() end) == Maybe.nothing()
   end
 
-  test "fold over a single value doesn't apply function if nothing is passed" do
+  test "fold/3 over a single value doesn't apply function if nothing is passed" do
     assert Maybe.fold(Maybe.nothing(), [5], &Maybe.just(&1 + &2)) == Maybe.nothing()
   end
 
-  test "fold over values returns last value returned by function if it returns only justs" do
+  test "fold/3 over values returns last value returned by function if it returns only justs" do
     assert Maybe.fold(Maybe.just(1), [2, 3, 4], &Maybe.just(&1 * &2)) == Maybe.just(24)
   end
 
-  test "fold over values returns nothing when the function returns it" do
+  test "fold/3 over values returns nothing when the function returns it" do
     assert Maybe.fold(Maybe.just(1), [2, 3, 4], fn
              _, 6 -> Maybe.nothing()
+             x, y -> Maybe.just(x + y)
+           end) == Maybe.nothing()
+  end
+
+  test "fold/2 over an empty list raises an EmptyError" do
+    assert_raise Enum.EmptyError, fn -> Maybe.fold([], &Maybe.just(&1 + &2)) end
+  end
+
+  test "fold/2 over a single value returns this value as just value" do
+    assert Maybe.fold([1], fn _, _ -> Maybe.nothing() end) == Maybe.just(1)
+  end
+
+  test "fold/2 over values returns last value returned by function if it returns only justs" do
+    assert Maybe.fold([5, 6, 7], &Maybe.just(&1 * &2)) == Maybe.just(210)
+  end
+
+  test "fold/2 over values returns nothing when the function returns it" do
+    assert Maybe.fold([5, 6, 7], fn
+             _, 11 -> Maybe.nothing()
              x, y -> Maybe.just(x + y)
            end) == Maybe.nothing()
   end

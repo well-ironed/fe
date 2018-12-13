@@ -102,14 +102,15 @@ defmodule FE.Maybe do
   def and_then({:just, value}, f), do: f.(value)
 
   @doc """
-  Applies first element from the provided list and the value of the provided
-  `FE.Maybe` to the provided function, that should return a `FE.Maybe`.
-  Then applies the second element from the list and the value of the
-  returned `FE.Maybe` to the function and so on.
+  Folds over provided list of elements applying it and current accumulator
+  to the provided function.
+
+  The provided function returns a new accumulator, that should be a `FE.Maybe`.
+  The provided `FE.Maybe` is the initial accumulator.
 
   Returns last value returned by the function.
 
-  Stops and returns nothing if at any moment the function returns a nothing.
+  Stops and returns nothing if at any moment the function returns nothing.
 
   ## Examples
       iex> FE.Maybe.fold(FE.Maybe.nothing(), [], &FE.Maybe.just(&1))
@@ -139,4 +140,28 @@ defmodule FE.Maybe do
       end
     end)
   end
+
+  @doc """
+  Works like `fold/3`, except that the first element of the provided list is removed
+  from it, wrapped in a `FE.Maybe` and treated as the initial accumulator.
+
+  Then, fold is executed over the remainder of the provided list.
+
+  ## Examples
+      iex> FE.Maybe.fold([1], fn _, _ -> FE.Maybe.nothing() end)
+      FE.Maybe.just(1)
+
+      iex> FE.Maybe.fold([1, 2, 3], &(FE.Maybe.just(&1 + &2)))
+      FE.Maybe.just(6)
+
+      iex> FE.Maybe.fold([1, 2, 3], fn
+      ...>   _, 3 -> FE.Maybe.nothing()
+      ...>   x, y -> FE.Maybe.just(x+y)
+      ...> end)
+      FE.Maybe.nothing()
+  """
+  @spec fold([b], (b, a -> t(a))) :: t(a) when a: var, b: var
+  def fold(elems, f)
+  def fold([], _), do: raise(Enum.EmptyError)
+  def fold([head | tail], f), do: fold(just(head), tail, f)
 end
