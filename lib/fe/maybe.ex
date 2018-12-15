@@ -105,46 +105,6 @@ defmodule FE.Maybe do
   def and_then({:just, value}, f), do: f.(value)
 
   @doc """
-  Transforms `FE.Maybe` to a `FE.Result`.
-
-  A `FE.Maybe` with a value wrapped becomes a successful value of a `FE.Result`.
-
-  A `FE.Maybe` without a value wrapped becomes an errornous `FE.Result` with the
-  output passed to the function.
-
-  ## Examples
-      iex> FE.Maybe.to_result(FE.Maybe.just(3), "error")
-      FE.Result.ok(3)
-
-      iex> FE.Maybe.to_result(FE.Maybe.nothing(), "error")
-      FE.Result.error("error")
-  """
-  @spec to_result(t(a), b) :: Result.t(a, b) when a: var, b: var
-  def to_result(maybe, error)
-  def to_result({:just, value}, _), do: Result.ok(value)
-  def to_result(:nothing, error), do: Result.error(error)
-
-  @doc """
-  Transforms `FE.Maybe` to a `FE.Review`.
-
-  A `FE.Maybe` with a value wrapped becomes an accepted `FE.Review` with the same value.
-
-  A `FE.Maybe` without a value wrapped becomes a rejected `FE.Review` with the
-  issues the same as passed to the function.
-
-  ## Examples
-      iex> FE.Maybe.to_review(FE.Maybe.just(3), ["error"])
-      FE.Review.accepted(3)
-
-      iex> FE.Maybe.to_review(FE.Maybe.nothing(), ["error"])
-      FE.Review.rejected(["error"])
-  """
-  @spec to_review(t(a), [b]) :: Review.t(a, b) when a: var, b: var
-  def to_review(maybe, issues)
-  def to_review({:just, value}, _), do: Review.accepted(value)
-  def to_review(:nothing, issues), do: Review.rejected(issues)
-
-  @doc """
   Folds over provided list of elements applying it and current accumulator
   to the provided function.
 
@@ -207,4 +167,44 @@ defmodule FE.Maybe do
   def fold(elems, f)
   def fold([], _), do: raise(Enum.EmptyError)
   def fold([head | tail], f), do: fold(just(head), tail, f)
+
+  @doc """
+  Transforms `FE.Maybe` to a `FE.Result`.
+
+  A `FE.Maybe` with a value wrapped becomes a successful value of a `FE.Result`.
+
+  A `FE.Maybe` without a value wrapped becomes an errornous `FE.Result` with the
+  output passed to the function.
+
+  ## Examples
+      iex> FE.Maybe.to_result(FE.Maybe.just(3), "error")
+      FE.Result.ok(3)
+
+      iex> FE.Maybe.to_result(FE.Maybe.nothing(), "error")
+      FE.Result.error("error")
+  """
+  @spec to_result(t(a), b) :: Result.t(a, b) when a: var, b: var
+  def to_result(maybe, error)
+  def to_result({:just, value}, _), do: Result.ok(value)
+  def to_result(:nothing, error), do: Result.error(error)
+
+  @doc """
+  Transforms `FE.Maybe` to a `FE.Review`.
+
+  A `FE.Maybe` with a value wrapped becomes an accepted `FE.Review` with the same value.
+
+  A `FE.Maybe` without a value wrapped becomes a rejected `FE.Review` with the
+  issues the same as passed to the function.
+
+  ## Examples
+      iex> FE.Maybe.to_review(FE.Maybe.just(3), ["error"])
+      FE.Review.accepted(3)
+
+      iex> FE.Maybe.to_review(FE.Maybe.nothing(), ["error"])
+      FE.Review.rejected(["error"])
+  """
+  @spec to_review(t(a), [b]) :: Review.t(a, b) when a: var, b: var
+  def to_review(maybe, issues)
+  def to_review({:just, value}, _), do: Review.accepted(value)
+  def to_review(:nothing, issues), do: Review.rejected(issues)
 end
