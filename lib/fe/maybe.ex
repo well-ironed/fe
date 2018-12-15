@@ -2,6 +2,9 @@ defmodule FE.Maybe do
   @moduledoc """
   `FE.Maybe` is an explicit data type for representing values that might or might not exist.
   """
+
+  alias FE.Result
+
   @type t(a) :: {:just, a} | :nothing
 
   defmodule Error do
@@ -100,6 +103,26 @@ defmodule FE.Maybe do
   def and_then(maybe, f)
   def and_then(:nothing, _), do: nothing()
   def and_then({:just, value}, f), do: f.(value)
+
+  @doc """
+  Transforms `FE.Maybe` to a `FE.Result`.
+
+  A `FE.Maybe` with a value wrapped becomes a successful value of a `FE.Result`.
+
+  A `FE.Maybe` without a value wrapped becomes an errornous `FE.Result` with the
+  output passed to the function.
+
+  ## Examples
+      iex> FE.Maybe.to_result(FE.Maybe.just(3), "error")
+      FE.Result.ok(3)
+
+      iex> FE.Maybe.to_result(FE.Maybe.nothing(), "error")
+      FE.Result.error("error")
+  """
+  @spec to_result(t(a), b) :: Result.t(a, b) when a: var, b: var
+  def to_result(maybe, error)
+  def to_result({:just, value}, _), do: Result.ok(value)
+  def to_result(:nothing, error), do: Result.error(error)
 
   @doc """
   Folds over provided list of elements applying it and current accumulator
