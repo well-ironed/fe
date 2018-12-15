@@ -2,7 +2,7 @@ defmodule FE.ReviewTest do
   use ExUnit.Case, async: true
   doctest FE.Review
 
-  alias FE.{Review, Result}
+  alias FE.{Review, Result, Maybe}
 
   test "accepted can be created with a constructor" do
     assert Review.accepted(:baz) == {:accepted, :baz}
@@ -136,6 +136,21 @@ defmodule FE.ReviewTest do
   test "to_result converts issues to an error with all the issues" do
     issues = Review.issues(1, [:one, "one", 'one'])
     assert Review.to_result(issues) == Result.error([:one, "one", 'one'])
+  end
+
+  test "to_maybe converts accepted value to just value" do
+    accepted = Review.accepted(:qux)
+    assert Review.to_maybe(accepted) == Maybe.just(:qux)
+  end
+
+  test "to_maybe converts rejected to nothing" do
+    rejected = Review.rejected(["d", "e", "f"])
+    assert Review.to_maybe(rejected) == Maybe.nothing()
+  end
+
+  test "to_maybe converts issues to nothing" do
+    issues = Review.issues(2, [:two, "two", 'TWO'])
+    assert Review.to_maybe(issues) == Maybe.nothing()
   end
 
   test "and_then chain collects issues on the way" do
