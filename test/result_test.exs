@@ -2,7 +2,7 @@ defmodule FE.ResultTest do
   use ExUnit.Case, async: true
   doctest FE.Result
 
-  alias FE.Result
+  alias FE.{Result, Maybe}
 
   test "ok can be created with a constructor" do
     assert Result.ok(:foo) == {:ok, :foo}
@@ -121,5 +121,15 @@ defmodule FE.ResultTest do
              _, 17 -> Result.error("edge of seventeen")
              x, y -> Result.ok(x + y)
            end) == Result.error("edge of seventeen")
+  end
+
+  test "to_maybe converts ok value to just value" do
+    ok = Result.ok("foo")
+    assert Result.to_maybe(ok) == Maybe.just("foo")
+  end
+
+  test "to_maybe converts error to nothing" do
+    error = Result.error("bar")
+    assert Result.to_maybe(error) == Maybe.nothing()
   end
 end

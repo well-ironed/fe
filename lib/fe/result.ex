@@ -5,6 +5,8 @@ defmodule FE.Result do
   @type t(a, b) :: {:ok, a} | {:error, b}
   @type t(a) :: t(a, any)
 
+  alias FE.Maybe
+
   defmodule Error do
     defexception [:message]
   end
@@ -159,4 +161,23 @@ defmodule FE.Result do
   def fold(elems, f)
   def fold([], _), do: raise(Enum.EmptyError)
   def fold([head | tail], f), do: fold(ok(head), tail, f)
+
+  @doc """
+  Transforms `FE.Result` to a `FE.Maybe`.
+
+  A `FE.Result` with successful value becomes a `FE.Maybe` with the same value.
+
+  An errornous `FE.Result` becomes a `FE.Maybe` without a value.
+
+  ## Examples
+      iex> FE.Result.to_maybe(FE.Result.ok(13))
+      FE.Maybe.just(13)
+
+      iex> FE.Result.to_maybe(FE.Result.error("something went wrong"))
+      FE.Maybe.nothing()
+  """
+  @spec to_maybe(t(a, any)) :: Maybe.t(a) when a: var
+  def to_maybe(result)
+  def to_maybe({:ok, value}), do: Maybe.just(value)
+  def to_maybe({:error, _}), do: Maybe.nothing()
 end
