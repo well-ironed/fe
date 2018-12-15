@@ -3,7 +3,7 @@ defmodule FE.Maybe do
   `FE.Maybe` is an explicit data type for representing values that might or might not exist.
   """
 
-  alias FE.Result
+  alias FE.{Result, Review}
 
   @type t(a) :: {:just, a} | :nothing
 
@@ -123,6 +123,26 @@ defmodule FE.Maybe do
   def to_result(maybe, error)
   def to_result({:just, value}, _), do: Result.ok(value)
   def to_result(:nothing, error), do: Result.error(error)
+
+  @doc """
+  Transforms `FE.Maybe` to a `FE.Review`.
+
+  A `FE.Maybe` with a value wrapped becomes an accepted `FE.Review` with the same value.
+
+  A `FE.Maybe` without a value wrapped becomes a rejected `FE.Review` with the
+  issues the same as passed to the function.
+
+  ## Examples
+      iex> FE.Maybe.to_review(FE.Maybe.just(3), ["error"])
+      FE.Review.accepted(3)
+
+      iex> FE.Maybe.to_review(FE.Maybe.nothing(), ["error"])
+      FE.Review.rejected(["error"])
+  """
+  @spec to_review(t(a), [b]) :: Review.t(a, b) when a: var, b: var
+  def to_review(maybe, issues)
+  def to_review({:just, value}, _), do: Review.accepted(value)
+  def to_review(:nothing, issues), do: Review.rejected(issues)
 
   @doc """
   Folds over provided list of elements applying it and current accumulator

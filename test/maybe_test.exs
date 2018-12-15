@@ -2,7 +2,7 @@ defmodule FE.MaybeTest do
   use ExUnit.Case, async: true
   doctest FE.Maybe
 
-  alias FE.{Maybe, Result}
+  alias FE.{Maybe, Result, Review}
 
   test "nothing can be created with a constructor" do
     assert Maybe.nothing() == :nothing
@@ -87,6 +87,16 @@ defmodule FE.MaybeTest do
 
   test "to_result converts nothing to error with passed erroreneous value" do
     assert Maybe.to_result(Maybe.nothing(), "it's an error") == Result.error("it's an error")
+  end
+
+  test "to_review converts just value to accepted review with the same value" do
+    just = Maybe.just(456)
+    assert Maybe.to_review(just, ["issue"]) == Review.accepted(456)
+  end
+
+  test "to_review converts nothing to rejected review with passed issues" do
+    issues = ["issue 1", "issue 2", "issue 3"]
+    assert Maybe.to_review(Maybe.nothing(), issues) == Review.rejected(issues)
   end
 
   test "fold/3 over an empty list returns passed maybe" do
