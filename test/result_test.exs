@@ -2,7 +2,7 @@ defmodule FE.ResultTest do
   use ExUnit.Case, async: true
   doctest FE.Result
 
-  alias FE.{Result, Maybe}
+  alias FE.{Result, Maybe, Review}
 
   test "ok can be created with a constructor" do
     assert Result.ok(:foo) == {:ok, :foo}
@@ -131,5 +131,22 @@ defmodule FE.ResultTest do
   test "to_maybe converts error to nothing" do
     error = Result.error("bar")
     assert Result.to_maybe(error) == Maybe.nothing()
+  end
+
+  test "to_review converts ok value to accepted review" do
+    ok = Result.ok("bar")
+    assert Result.to_review(ok) == Review.accepted("bar")
+  end
+
+  test "to_review converts error with a list to rejected review with issues " <>
+         "being the same list" do
+    error = Result.error([1, 2, 3])
+    assert Result.to_review(error) == Review.rejected([1, 2, 3])
+  end
+
+  test "to_review converts error that's no a list to rejected review with " <>
+         "error value as a single issue" do
+    error = Result.error("error")
+    assert Result.to_review(error) == Review.rejected(["error"])
   end
 end

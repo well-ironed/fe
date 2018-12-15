@@ -5,7 +5,7 @@ defmodule FE.Result do
   @type t(a, b) :: {:ok, a} | {:error, b}
   @type t(a) :: t(a, any)
 
-  alias FE.Maybe
+  alias FE.{Maybe, Review}
 
   defmodule Error do
     defexception [:message]
@@ -180,4 +180,32 @@ defmodule FE.Result do
   def to_maybe(result)
   def to_maybe({:ok, value}), do: Maybe.just(value)
   def to_maybe({:error, _}), do: Maybe.nothing()
+
+  @doc """
+  Transforms `FE.Result` to a `FE.Review`.
+
+  A `FE.Result` with successful value becomes an accepted `FE.Review` with
+  the same value.
+
+  An errornous `FE.Result` with error output being a list becomes a rejected
+  `FE.Review` with issues being exactly this list.
+
+  An errornous `FE.Result` with error output being other term becomes a rejected
+  `FE.Review` with one issue, being this term.
+
+  ## Examples
+      iex> FE.Result.to_review(FE.Result.ok(23))
+      FE.Review.accepted(23)
+
+      iex> FE.Result.to_review(FE.Result.error(["wrong", "bad", "very bad"]))
+      FE.Review.rejected(["wrong", "bad", "very bad"])
+
+      iex> FE.Result.to_review(FE.Result.error("error"))
+      FE.Review.rejected(["error"])
+  """
+  @spec to_review(t(a, b) | t(a, [b])) :: Review.t(a, b) when a: var, b: var
+  def to_review(result)
+  def to_review({:ok, value}), do: Review.accepted(value)
+  def to_review({:error, values}) when is_list(values), do: Review.rejected(values)
+  def to_review({:error, value}), do: Review.rejected([value])
 end
