@@ -1,6 +1,6 @@
 defmodule FE.Result do
   @moduledoc """
-  `FE.Result` is a data type for representing output of a computation that either succeed or fail.
+  `FE.Result` is a data type for representing output of a computation that either succeeded or failed.
   """
   @type t(a, b) :: {:ok, a} | {:error, b}
   @type t(a) :: t(a, any)
