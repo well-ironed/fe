@@ -2,7 +2,7 @@ defmodule FE.ReviewTest do
   use ExUnit.Case, async: true
   doctest FE.Review
 
-  alias FE.{Review, Result}
+  alias FE.{Review, Result, Maybe}
 
   test "accepted can be created with a constructor" do
     assert Review.accepted(:baz) == {:accepted, :baz}
@@ -123,21 +123,6 @@ defmodule FE.ReviewTest do
              Review.rejected([:b, :c, :x])
   end
 
-  test "to_result converts accepted value to an ok value" do
-    accepted = Review.accepted(:baz)
-    assert Review.to_result(accepted) == Result.ok(:baz)
-  end
-
-  test "to_result converts rejected to an error with all the issues" do
-    rejected = Review.rejected([:a, :b, :c])
-    assert Review.to_result(rejected) == Result.error([:a, :b, :c])
-  end
-
-  test "to_result converts issues to an error with all the issues" do
-    issues = Review.issues(1, [:one, "one", 'one'])
-    assert Review.to_result(issues) == Result.error([:one, "one", 'one'])
-  end
-
   test "and_then chain collects issues on the way" do
     result =
       Review.accepted(1)
@@ -244,5 +229,35 @@ defmodule FE.ReviewTest do
              _, 10 -> Review.rejected([10])
              x, y -> Review.issues(x + y, [y])
            end) == Review.rejected([1, 3, 6, 10])
+  end
+
+  test "to_result converts accepted value to an ok value" do
+    accepted = Review.accepted(:baz)
+    assert Review.to_result(accepted) == Result.ok(:baz)
+  end
+
+  test "to_result converts rejected to an error with all the issues" do
+    rejected = Review.rejected([:a, :b, :c])
+    assert Review.to_result(rejected) == Result.error([:a, :b, :c])
+  end
+
+  test "to_result converts issues to an error with all the issues" do
+    issues = Review.issues(1, [:one, "one", 'one'])
+    assert Review.to_result(issues) == Result.error([:one, "one", 'one'])
+  end
+
+  test "to_maybe converts accepted value to just value" do
+    accepted = Review.accepted(:qux)
+    assert Review.to_maybe(accepted) == Maybe.just(:qux)
+  end
+
+  test "to_maybe converts rejected to nothing" do
+    rejected = Review.rejected(["d", "e", "f"])
+    assert Review.to_maybe(rejected) == Maybe.nothing()
+  end
+
+  test "to_maybe converts issues to nothing" do
+    issues = Review.issues(2, [:two, "two", 'TWO'])
+    assert Review.to_maybe(issues) == Maybe.nothing()
   end
 end

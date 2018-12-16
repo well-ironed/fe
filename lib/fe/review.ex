@@ -15,7 +15,7 @@ defmodule FE.Review do
 
   @type t(a, b) :: {:accepted, a} | {:issues, a, [b]} | {:rejected, [b]}
 
-  alias FE.Result
+  alias FE.{Maybe, Result}
 
   defmodule Error do
     defexception [:message]
@@ -121,31 +121,6 @@ defmodule FE.Review do
 
   def unwrap!({:issues, _, _}),
     do: raise(Error, "unwrapping Review with issues")
-
-  @doc """
-  Transforms `FE.Review` into a `FE.Result`.
-
-  Any accepted value of a `FE.Review` becomes a successful value of a `FE.Result`.
-
-  If there are any issues either in a rejected `FE.Review` or coupled with a value,
-  all the issues become a errornous output of the output `FE.Result`.
-
-  ## Examples
-      iex> FE.Review.to_result(FE.Review.issues(1, [2, 3]))
-      FE.Result.error([2, 3])
-
-      iex> FE.Review.to_result(FE.Review.accepted(4))
-      FE.Result.ok(4)
-
-      iex> FE.Review.to_result(FE.Review.rejected([5, 6, 7]))
-      FE.Result.error([5, 6, 7])
-  """
-
-  @spec to_result(t(a, b)) :: Result.t(a, [b]) when a: var, b: var
-  def to_result(review)
-  def to_result({:accepted, value}), do: Result.ok(value)
-  def to_result({:rejected, issues}), do: Result.error(issues)
-  def to_result({:issues, _, issues}), do: Result.error(issues)
 
   @doc """
   Applies accepted value of a `FE.Review` to a provided function.
@@ -283,4 +258,52 @@ defmodule FE.Review do
   @spec fold([c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
   def fold([], _), do: raise(Enum.EmptyError)
   def fold([head | tail], f), do: fold(accepted(head), tail, f)
+
+  @doc """
+  Transforms `FE.Review` to a `FE.Result`.
+
+  Any accepted value of a `FE.Review` becomes a successful value of a `FE.Result`.
+
+  If there are any issues either in a rejected `FE.Review` or coupled with a value,
+  all the issues become a errornous output of the output `FE.Result`.
+
+  ## Examples
+      iex> FE.Review.to_result(FE.Review.issues(1, [2, 3]))
+      FE.Result.error([2, 3])
+
+      iex> FE.Review.to_result(FE.Review.accepted(4))
+      FE.Result.ok(4)
+
+      iex> FE.Review.to_result(FE.Review.rejected([5, 6, 7]))
+      FE.Result.error([5, 6, 7])
+  """
+  @spec to_result(t(a, b)) :: Result.t(a, [b]) when a: var, b: var
+  def to_result(review)
+  def to_result({:accepted, value}), do: Result.ok(value)
+  def to_result({:rejected, issues}), do: Result.error(issues)
+  def to_result({:issues, _, issues}), do: Result.error(issues)
+
+  @doc """
+  Transforms `FE.Review` to a `FE.Maybe`.
+
+  Any accepted value of a `FE.Review` becomes a `FE.Maybe` with the same value.
+
+  If there are any issues either in a rejected `FE.Review` or coupled with a value,
+  a `FE.Maybe` without a value is returned.
+
+  ## Examples
+      iex> FE.Review.to_maybe(FE.Review.issues(1, [2, 3]))
+      FE.Maybe.nothing()
+
+      iex> FE.Review.to_maybe(FE.Review.accepted(4))
+      FE.Maybe.just(4)
+
+      iex> FE.Review.to_maybe(FE.Review.rejected([5, 6, 7]))
+      FE.Maybe.nothing()
+  """
+  @spec to_maybe(t(a, any)) :: Maybe.t(a) when a: var
+  def to_maybe(review)
+  def to_maybe({:accepted, value}), do: Maybe.just(value)
+  def to_maybe({:rejected, _}), do: Maybe.nothing()
+  def to_maybe({:issues, _, _}), do: Maybe.nothing()
 end
