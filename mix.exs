@@ -9,7 +9,10 @@ defmodule FE.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       docs: docs(),
-      preferred_cli_env: [dialyzer: :test]
+      preferred_cli_env: [dialyzer: :test],
+      description: description(),
+      package: package(),
+      source_url: "https://github.com/distributed-owls/fe"
     ]
   end
 
@@ -23,6 +26,17 @@ defmodule FE.MixProject do
     [
       main: "readme",
       extras: ["README.md"]
+    ]
+  end
+
+  defp description do
+    "Collection of useful data types brought to Elixir from other functional languages."
+  end
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/distributed-owls/fe"}
     ]
   end
 
