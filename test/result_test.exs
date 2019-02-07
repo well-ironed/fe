@@ -42,8 +42,8 @@ defmodule FE.ResultTest do
     assert Result.unwrap!(Result.ok(:foo)) == :foo
   end
 
-  test "unwrap! raises an exception if an error is passed" do
-    assert_raise Result.Error, "unwrapping Result with an error", fn ->
+  test "unwrap! raises an exception with error content in message if an error is passed" do
+    assert_raise Result.Error, "unwrapping Result with an error: :bar", fn ->
       Result.unwrap!(Result.error(:bar))
     end
   end
