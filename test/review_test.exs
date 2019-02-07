@@ -58,14 +58,14 @@ defmodule FE.ReviewTest do
     assert Review.unwrap!(Review.accepted("value")) == "value"
   end
 
-  test "unwrap! raises an exception if rejected is passed" do
-    assert_raise Review.Error, "unwrapping rejected Review", fn ->
+  test "unwrap! raises an exception with issues in message if rejected is passed" do
+    assert_raise Review.Error, "unwrapping rejected Review with issues: [:a]", fn ->
       Review.unwrap!(Review.rejected([:a]))
     end
   end
 
-  test "unwrap! raises an exception if issues are passed" do
-    assert_raise Review.Error, "unwrapping Review with issues", fn ->
+  test "unwrap! raises an exception with issues in message if issues are passed" do
+    assert_raise Review.Error, "unwrapping Review with issues: [2, 3, 4]", fn ->
       Review.unwrap!(Review.issues(1, [2, 3, 4]))
     end
   end

@@ -117,10 +117,14 @@ defmodule FE.Review do
   @spec unwrap!(t(a, any)) :: a when a: var
   def unwrap!(review)
   def unwrap!({:accepted, value}), do: value
-  def unwrap!({:rejected, _}), do: raise(Error, "unwrapping rejected Review")
 
-  def unwrap!({:issues, _, _}),
-    do: raise(Error, "unwrapping Review with issues")
+  def unwrap!({:rejected, issues}) do
+    raise(Error, "unwrapping rejected Review with issues: #{inspect(issues)}")
+  end
+
+  def unwrap!({:issues, _, issues}) do
+    raise(Error, "unwrapping Review with issues: #{inspect(issues)}")
+  end
 
   @doc """
   Applies accepted value of a `FE.Review` to a provided function.

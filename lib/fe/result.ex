@@ -74,7 +74,10 @@ defmodule FE.Result do
   @spec unwrap!(t(a)) :: a | no_return() when a: var
   def unwrap!(result)
   def unwrap!({:ok, value}), do: value
-  def unwrap!({:error, _}), do: raise(Error, "unwrapping Result with an error")
+
+  def unwrap!({:error, error}) do
+    raise(Error, "unwrapping Result with an error: #{inspect(error)}")
+  end
 
   @doc """
   Applies success value of a `FE.Result` to a provided function and returns its return value,
