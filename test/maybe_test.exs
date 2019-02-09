@@ -3,6 +3,7 @@ defmodule FE.MaybeTest do
   doctest FE.Maybe
 
   alias FE.{Maybe, Result, Review}
+  require FE.Maybe
 
   test "nothing can be created with a constructor" do
     assert Maybe.nothing() == :nothing
@@ -47,6 +48,12 @@ defmodule FE.MaybeTest do
   test "unwrap! raises an exception if nothing is passed" do
     assert_raise FE.Maybe.Error, "unwrapping Maybe that has no value", fn ->
       Maybe.unwrap!(Maybe.nothing())
+    end
+  end
+
+  test "and_then returns an error if not a Maybe is passed" do
+    assert_raise Maybe.Error, "not a Maybe: :not_a_maybe", fn ->
+      Maybe.and_then(:not_a_maybe, fn _ -> Maybe.nothing() end)
     end
   end
 
@@ -143,5 +150,103 @@ defmodule FE.MaybeTest do
   test "to_review converts nothing to rejected review with passed issues" do
     issues = ["issue 1", "issue 2", "issue 3"]
     assert Maybe.to_review(Maybe.nothing(), issues) == Review.rejected(issues)
+  end
+
+  test "with returns just value if it's the only statement in the do block" do
+    assert (Maybe.with do
+              Maybe.just("hello")
+            end) == Maybe.just("hello")
+  end
+
+  test "with returns nothing if it's the only statement in the do block" do
+    assert (Maybe.with do
+              Maybe.nothing()
+            end) == Maybe.nothing()
+  end
+
+  test "with crashes if the last statements is not a Maybe" do
+    assert_raise Maybe.Error, "not a Maybe: \"hello\"", fn ->
+      Maybe.with do
+        "hello"
+      end
+    end
+  end
+
+  test "with returns the last statement of the do block" do
+    assert (Maybe.with do
+              _ = "hello"
+              Maybe.just("world")
+            end) == Maybe.just("world")
+  end
+
+  test "with returns the last statement of the do block derived from the unwrapped just value" do
+    assert (Maybe.with do
+              x <- Maybe.just(5)
+              Maybe.just(x + 10)
+            end) == Maybe.just(15)
+  end
+
+  test "with can bind more unwrapped just values to variables and reuse them" do
+    assert (Maybe.with do
+              x <- Maybe.just(3)
+              y <- Maybe.just(x * 10)
+              z <- Maybe.just(y + 2)
+              Maybe.just(z)
+            end) == Maybe.just(32)
+  end
+
+  test "with stops execution and returns nothing when variable is tried to be bound to nothing" do
+    assert (Maybe.with do
+              x <- Maybe.just(3)
+              _ <- Maybe.nothing()
+              z <- Maybe.just(5 + x)
+              z
+            end) == Maybe.nothing()
+  end
+
+  test "a variable can be rebound inside with" do
+    assert (Maybe.with do
+              x <- Maybe.just(3)
+              x <- Maybe.just(2 * x)
+              x <- Maybe.just(4 + x)
+              Maybe.just(x)
+            end) == Maybe.just(10)
+  end
+
+  test "variable can be bound with = operator without unwrapping it as Maybe" do
+    assert (Maybe.with do
+              x <- Maybe.just(5)
+              y = 10
+              Maybe.just(x + y)
+            end) == Maybe.just(15)
+  end
+
+  test "with crashes if there is an attempt to bind not a Maybe" do
+    assert_raise Maybe.Error, "not a Maybe: \"just five\"", fn ->
+      Maybe.with do
+        x <- Maybe.just("five")
+        y <- "just " <> x
+        Maybe.just(y)
+      end
+    end
+  end
+
+  test "with can unwrap more complex terms" do
+    assert (Maybe.with do
+              %{x: x, yz: %{y: y, z: z}} <- Maybe.just(%{x: 2, yz: %{y: 5, z: 8}})
+              Maybe.just(x + y + z)
+            end) == Maybe.just(15)
+  end
+
+  test "with can interleave binds and other expressions" do
+    assert (Maybe.with do
+              x <- Maybe.just(2)
+              y <- Maybe.just(5)
+
+              case x + y do
+                7 -> Maybe.just("seven")
+                8 -> Maybe.just("eight")
+              end
+            end) == Maybe.just("seven")
   end
 end

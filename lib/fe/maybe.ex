@@ -103,6 +103,7 @@ defmodule FE.Maybe do
   def and_then(maybe, f)
   def and_then(:nothing, _), do: nothing()
   def and_then({:just, value}, f), do: f.(value)
+  def and_then(other, _), do: raise(Error, "not a Maybe: #{inspect(other)}")
 
   @doc """
   Folds over provided list of elements applying it and current accumulator
@@ -207,4 +208,77 @@ defmodule FE.Maybe do
   def to_review(maybe, issues)
   def to_review({:just, value}, _), do: Review.accepted(value)
   def to_review(:nothing, issues), do: Review.rejected(issues)
+
+  @doc """
+  Syntactic sugar for longer and interdependent chains of `and_then`s.
+
+  Code in the `do ... end` block will behave like normal Elixir code, except for
+  variable binds using the `<-` operator, that will try to unwrap `Maybe` on the
+  right hand side and bind it to the left hand side.
+  The execution will stop immediately whenever there is `Maybe.nothing()` on the
+  right hand side of such a bind.
+
+  The `do ... end` block must return `Maybe`.
+
+  ## Examples
+      iex> FE.Maybe.with do
+      ...>   x <- FE.Maybe.just(3)
+      ...>   y <- FE.Maybe.just(5)
+      ...>   FE.Maybe.just(x + y)
+      ...> end
+      FE.Maybe.just(8)
+
+      iex> FE.Maybe.with do
+      ...>   x <- FE.Maybe.just(3)
+      ...>   _ <- FE.Maybe.nothing()
+      ...>   z <- FE.Maybe.just(5)
+      ...>   FE.Maybe.just(x + z)
+      ...> end
+      FE.Maybe.nothing()
+  """
+  defmacro with(do_block)
+
+  defmacro with(do: ast) do
+    quote do
+      value = unquote(Macro.prewalk(ast, &bind_to_and_thens/1))
+      FE.Maybe.and_then(value, &FE.Maybe.just/1)
+    end
+  end
+
+  @spec bind_to_and_thens(Macro.t()) :: Macro.t()
+  defp bind_to_and_thens({:__block__, _, statements}) do
+    statements
+    |> Enum.reverse()
+    |> Enum.reduce(nothing(), &bind_to_and_then/2)
+    |> unwrap!()
+  end
+
+  defp bind_to_and_thens(other), do: other
+
+  @spec bind_to_and_then(Macro.t(), t(Macro.t())) :: Macro.t()
+  defp bind_to_and_then({:<-, line, [lhs, rhs]}, :nothing) do
+    quote line: line do
+      FE.Maybe.and_then(unquote(rhs), fn unquote(lhs) -> unquote(lhs) end)
+    end
+    |> just()
+  end
+
+  defp bind_to_and_then({:<-, line, [lhs, rhs]}, {:just, acc}) do
+    quote line: line do
+      FE.Maybe.and_then(unquote(rhs), fn unquote(lhs) -> unquote(acc) end)
+    end
+    |> just()
+  end
+
+  defp bind_to_and_then(other, {:just, acc}) do
+    quote do
+      unquote(other)
+      unquote(acc)
+    end
+    |> just()
+  end
+
+  defp bind_to_and_then(other, :nothing) do
+    just(other)
+  end
 end
