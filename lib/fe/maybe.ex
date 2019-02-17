@@ -71,6 +71,22 @@ defmodule FE.Maybe do
   def unwrap_or({:just, value}, _), do: value
 
   @doc """
+  Provides the value stored in `FE.Maybe` to the first function, or runs the second function.
+
+  ## Examples
+      iex> FE.Maybe.unwrap_with(FE.Maybe.nothing(), fn(x) -> x+1 end, fn() -> :foo end)
+      :foo
+
+      iex> FE.Maybe.unwrap_with(FE.Maybe.just("a"), fn(x) -> x <> "bc" end, fn() -> "xyz" end)
+      "abc"
+  """
+  @spec map(t(a), (a -> a)) :: t(a) when a: var
+  @spec unwrap_with(t(a), (a -> b), (() -> c)) :: b | c when a: var, b: var, c: var
+  def unwrap_with(maybe, on_just, on_nothing)
+  def unwrap_with(:nothing, _, on_nothing), do: on_nothing.()
+  def unwrap_with({:just, value}, on_just, _), do: on_just.(value)
+
+  @doc """
   Returns the value stored in a `FE.Maybe`, raises a `FE.Maybe.Error` if a non-value is passed.
 
   ## Examples

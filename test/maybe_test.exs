@@ -30,6 +30,10 @@ defmodule FE.MaybeTest do
     assert Maybe.map(Maybe.just("bar"), &String.length/1) == Maybe.just(3)
   end
 
+  test "unwrap_with applies the first function to just value" do
+    assert Maybe.unwrap_with(Maybe.just(5), &(&1 * 2), &(&1 - 5)) == 10
+  end
+
   test "unwrap_or returns default value if nothing is passed" do
     assert Maybe.unwrap_or(Maybe.nothing(), :default) == :default
   end
