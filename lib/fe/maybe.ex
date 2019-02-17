@@ -74,16 +74,15 @@ defmodule FE.Maybe do
   Provides the value stored in `FE.Maybe` to the first function, or runs the second function.
 
   ## Examples
-      iex> FE.Maybe.unwrap_with(FE.Maybe.nothing(), fn(x) -> x+1 end, fn() -> :foo end)
+      iex> FE.Maybe.unwrap_with(FE.Maybe.nothing(), fn(x) -> x+1 end, :foo)
       :foo
 
-      iex> FE.Maybe.unwrap_with(FE.Maybe.just("a"), fn(x) -> x <> "bc" end, fn() -> "xyz" end)
+      iex> FE.Maybe.unwrap_with(FE.Maybe.just("a"), fn(x) -> x <> "bc" end, "xyz")
       "abc"
   """
-  @spec map(t(a), (a -> a)) :: t(a) when a: var
-  @spec unwrap_with(t(a), (a -> b), (() -> c)) :: b | c when a: var, b: var, c: var
-  def unwrap_with(maybe, on_just, on_nothing)
-  def unwrap_with(:nothing, _, on_nothing), do: on_nothing.()
+  @spec unwrap_with(t(a), (a -> b), b) :: b when a: var, b: var
+  def unwrap_with(maybe, on_just, default)
+  def unwrap_with(:nothing, _, default), do: default
   def unwrap_with({:just, value}, on_just, _), do: on_just.(value)
 
   @doc """
