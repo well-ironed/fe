@@ -71,7 +71,7 @@ defmodule FE.Maybe do
   def unwrap_or({:just, value}, _), do: value
 
   @doc """
-  Provides the value stored in `FE.Maybe` to the first function, or runs the second function.
+  Passes the value stored in `FE.Maybe` as input to the first function, or returns the provided default.
 
   ## Examples
       iex> FE.Maybe.unwrap_with(FE.Maybe.nothing(), fn(x) -> x+1 end, :foo)
