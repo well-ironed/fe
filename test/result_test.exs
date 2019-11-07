@@ -123,6 +123,26 @@ defmodule FE.ResultTest do
            end) == Result.error("edge of seventeen")
   end
 
+  test "oks/1 does nothing on empty list" do
+    assert Result.oks([]) == []
+  end
+
+  test "oks/1 returns ok value of an ok" do
+    assert Result.oks([Result.ok(1)]) == [1]
+  end
+
+  test "oks/1 preserves ordering" do
+    assert Result.oks([Result.ok(1), Result.ok(2)]) == [1, 2]
+  end
+
+  test "oks/1 doesn't return errors" do
+    assert Result.oks([Result.error(1)]) == []
+  end
+
+  test "oks/1 filters out only ok values" do
+    assert Result.oks([Result.error(1), Result.ok(2)]) == [2]
+  end
+
   test "to_maybe converts ok value to just value" do
     ok = Result.ok("foo")
     assert Result.to_maybe(ok) == Maybe.just("foo")

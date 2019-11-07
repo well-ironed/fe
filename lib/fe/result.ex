@@ -166,6 +166,23 @@ defmodule FE.Result do
   def fold([head | tail], f), do: fold(ok(head), tail, f)
 
   @doc """
+  Returns the `FE.Result.ok` values from a list of `FE.Result`s.
+
+  ## Examples
+  iex> FE.Result.oks([FE.Result.ok(:good), FE.Result.error(:bad), FE.Result.ok(:better)])
+  [:good, :better]
+  """
+
+  @spec oks([t(a, any)]) :: [a] when a: var
+  def oks(e) do
+    Enum.reduce(e, [], fn
+      {:ok, val}, acc -> [val | acc]
+      {:error, _}, acc -> acc
+    end)
+    |> Enum.reverse()
+  end
+
+  @doc """
   Transforms `FE.Result` to a `FE.Maybe`.
 
   A `FE.Result` with successful value becomes a `FE.Maybe` with the same value.
