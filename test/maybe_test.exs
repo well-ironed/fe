@@ -134,6 +134,22 @@ defmodule FE.MaybeTest do
            end) == Maybe.nothing()
   end
 
+  test "justs/1 does nothing on empty list" do
+    assert Maybe.justs([]) == []
+  end
+
+  test "justs/1 preserves ordering" do
+    assert Maybe.justs([Maybe.just(1), Maybe.just(2)]) == [1, 2]
+  end
+
+  test "justs/1 doesn't return nothings" do
+    assert Maybe.justs([Maybe.nothing(), Maybe.nothing()]) == []
+  end
+
+  test "justs/1 filters out only justs" do
+    assert Maybe.justs([Maybe.nothing(), Maybe.just(2)]) == [2]
+  end
+
   test "to_result converts just value to ok with the same value" do
     just = Maybe.just(123)
     assert Maybe.to_result(just, "error") == Result.ok(123)

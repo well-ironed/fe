@@ -169,8 +169,8 @@ defmodule FE.Result do
   Returns the `FE.Result.ok` values from a list of `FE.Result`s.
 
   ## Examples
-  iex> FE.Result.oks([FE.Result.ok(:good), FE.Result.error(:bad), FE.Result.ok(:better)])
-  [:good, :better]
+      iex> FE.Result.oks([FE.Result.ok(:good), FE.Result.error(:bad), FE.Result.ok(:better)])
+      [:good, :better]
   """
 
   @spec oks([t(a, any)]) :: [a] when a: var

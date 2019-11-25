@@ -202,6 +202,22 @@ defmodule FE.Maybe do
   def fold([head | tail], f), do: fold(just(head), tail, f)
 
   @doc """
+  Extracts only the values from a list of `Maybe.t()`s
+
+  ## Examples
+      iex> FE.Maybe.justs([FE.Maybe.just(:good), FE.Maybe.nothing(), FE.Maybe.just(:better)])
+      [:good, :better]
+  """
+  @spec justs([t(a)]) :: [a] when a: var
+  def justs(els) do
+    Enum.reduce(els, [], fn
+      {:just, value}, acc -> [value | acc]
+      :nothing, acc -> acc
+    end)
+    |> Enum.reverse()
+  end
+
+  @doc """
   Transforms an `FE.Maybe` to an `FE.Result`.
 
   An `FE.Maybe` with a value becomes a successful value of a `FE.Result`.
