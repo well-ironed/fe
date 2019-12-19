@@ -4,15 +4,15 @@ defmodule FE.MixProject do
   def project do
     [
       app: :fe,
-      version: "0.1.3",
-      elixir: "~> 1.7",
-      start_permanent: Mix.env() == :prod,
       deps: deps(),
-      docs: docs(),
-      preferred_cli_env: [dialyzer: :test],
       description: description(),
+      docs: docs(),
+      elixir: "~> 1.7",
       package: package(),
-      source_url: "https://github.com/distributed-owls/fe"
+      preferred_cli_env: [dialyzer: :test],
+      source_url: "https://github.com/well-ironed/fe",
+      start_permanent: Mix.env() == :prod,
+      version: "0.1.4",
     ]
   end
 
@@ -36,7 +36,7 @@ defmodule FE.MixProject do
   defp package do
     [
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/distributed-owls/fe"}
+      links: %{"GitHub" => "https://github.com/well-ironed/fe"}
     ]
   end
 
