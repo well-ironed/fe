@@ -48,6 +48,14 @@ defmodule FE.ResultTest do
     end
   end
 
+  test "unwrap_with runs first function on ok value" do
+    assert Result.unwrap_with({:ok, "hello"}, &String.length/1, &String.to_atom/1) == 5
+  end
+
+  test "unwrap_with runs second function on error value" do
+    assert Result.unwrap_with({:error, "hello"}, &String.length/1, &String.to_atom/1) == :hello
+  end
+
   test "and_then returns error if an error is passed" do
     assert Result.and_then(Result.error(5), fn x -> Result.ok(x * 2) end) == Result.error(5)
   end

@@ -80,6 +80,24 @@ defmodule FE.Result do
   end
 
   @doc """
+  Runs the first function on a success value, or the second function on
+  error value, returning the results.
+
+  ## Examples
+
+      iex> FE.Result.ok(1) |> FE.Result.unwrap_with(&inspect/1, &("error: "<> inspect(&1)))
+      "1"
+
+      iex> FE.Result.error("db down") |> FE.Result.unwrap_with(&inspect/1, &("error: "<> &1))
+      "error: db down"
+
+  """
+  @spec unwrap_with(t(a, b), (a -> c), (b -> d)) :: c | d when a: var, b: var, c: var, d: var
+  def unwrap_with(result, on_ok, on_error)
+  def unwrap_with({:ok, value}, f, _) when is_function(f, 1), do: f.(value)
+  def unwrap_with({:error, error}, _, f) when is_function(f, 1), do: f.(error)
+
+  @doc """
   Applies success value of a `FE.Result` to a provided function and returns its return value,
   that should be of `FE.Result` type.
 
@@ -87,13 +105,13 @@ defmodule FE.Result do
   takes success value wrapped in `FE.Result` as an argument and returns a `FE.Result`.
 
   ## Examples
-      iex> FE.Result.and_then(FE.Result.error("foo"), &FE.Result.ok(String.length(&1)))
+      iex> FE.Result.error("foo") |> FE.Result.and_then(&FE.Result.ok(String.length(&1)))
       FE.Result.error("foo")
 
-      iex> FE.Result.and_then(FE.Result.ok("bar"), &FE.Result.ok(String.length(&1)))
+      iex> FE.Result.ok("bar") |> FE.Result.and_then(&FE.Result.ok(String.length(&1)))
       FE.Result.ok(3)
 
-      iex> FE.Result.and_then(FE.Result.ok("bar"), fn _ -> FE.Result.error(:baz) end)
+      iex> FE.Result.ok("bar") |> FE.Result.and_then(fn _ -> FE.Result.error(:baz) end)
       FE.Result.error(:baz)
   """
   @spec and_then(t(a, b), (a -> t(c, b))) :: t(c, b) when a: var, b: var, c: var
