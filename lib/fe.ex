@@ -22,10 +22,12 @@ defmodule FE do
   """
   @spec curry((a, ... -> any())) :: (a -> any()) when a: var
   def curry(fun) do
-    {_, arity} = :erlang.fun_info(fun, :arity)
-    curry(fun, arity, [])
+    case :erlang.fun_info(fun, :arity) do
+      {_, 0} -> raise ArgumentError, "0-ary functions cannot be curried"
+      {_, arity} -> curry(fun, arity, [])
+    end
   end
-
+  
   defp curry(fun, 0, args) do
     apply(fun, Enum.reverse args)
   end
