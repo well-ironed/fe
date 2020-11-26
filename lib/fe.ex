@@ -20,7 +20,7 @@ defmodule FE do
   Transforms a n-ary function in an unary one that accepts its first
   argument and returns a function expecting the next one, successively
   """
-  @spec curry((a, ... -> any())) :: (a -> any()) when a: var
+  @spec curry((... -> any())) :: (any() -> any())
   def curry(fun) do
     case :erlang.fun_info(fun, :arity) do
       {_, 0} -> raise ArgumentError, "0-ary functions cannot be curried"
