@@ -76,20 +76,26 @@ defmodule FE.Maybe do
   def unwrap_or({:just, value}, _), do: value
 
   @doc """
-  Passes the value stored in `FE.Maybe` as input to the first function, or returns the provided default.
+  Passes the value stored in `FE.Maybe` as input to the first function or returns the provided default.
+  Default can be a zero arity function as well.
 
   ## Examples
       iex> FE.Maybe.unwrap_with(FE.Maybe.nothing(), fn(x) -> x+1 end, 0)
       0
+
+      iex> FE.Maybe.unwrap_with(FE.Maybe.nothing(), fn(x) -> x <> "bc" end, fn() -> "ok" end)
+      "ok"
 
       iex> FE.Maybe.unwrap_with(FE.Maybe.just(4), fn(x) -> x+1 end, 0)
       5
 
       iex> FE.Maybe.unwrap_with(FE.Maybe.just("a"), fn(x) -> x <> "bc" end, "xyz")
       "abc"
+
   """
   @spec unwrap_with(t(a), (a -> b), b) :: b when a: var, b: var
   def unwrap_with(maybe, on_just, default)
+  def unwrap_with(:nothing, _, on_failure) when is_function(on_failure), do: on_failure.()
   def unwrap_with(:nothing, _, default), do: default
   def unwrap_with({:just, value}, on_just, _), do: on_just.(value)
 

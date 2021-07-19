@@ -34,6 +34,10 @@ defmodule FE.MaybeTest do
     assert Maybe.unwrap_with(Maybe.just(5), &(&1 * 2), :whatever) == 10
   end
 
+  test "unwrap_with uses function if function provided for nothing" do
+    assert Maybe.unwrap_with(Maybe.nothing(), &(&1 * 2), fn -> :whatever end) == :whatever
+  end
+
   test "unwrap_with uses default value for nothing" do
     assert Maybe.unwrap_with(Maybe.nothing(), &(&1 * 2), :whatever) == :whatever
   end
