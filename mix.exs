@@ -12,7 +12,7 @@ defmodule FE.MixProject do
       preferred_cli_env: [dialyzer: :test],
       source_url: "https://github.com/well-ironed/fe",
       start_permanent: Mix.env() == :prod,
-      version: "0.1.4",
+      version: "0.1.4"
     ]
   end
 
