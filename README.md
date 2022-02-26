@@ -37,7 +37,7 @@ it to dependencies:
 ```elixir
 defp deps() do
   [
-    {:fe, "~> 0.1.2"}
+    {:fe, "~> 0.1.5"}
   ]
 end
 ```
