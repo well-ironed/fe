@@ -201,6 +201,26 @@ defmodule FE.Result do
   end
 
   @doc """
+  If a list of `FE.Result`s is all `FE.Result.ok`s, returns a `FE.Result.ok`
+  where the value is a list of the unwrapped values.
+
+  Otherwise, returns `FE.Result.error` with the first erroneous value.
+
+  ## Examples
+      iex> FE.Result.all_ok([FE.Result.ok(:a), FE.Result.ok(:b), FE.Result.ok(:c)])
+      FE.Result.ok([:a, :b, :c])
+      iex> FE.Result.all_ok([FE.Result.ok(:a), FE.Result.error("BAD APPLE"), FE.Result.ok(:c)])
+      FE.Result.error("BAD APPLE")
+  """
+
+  @spec all_ok([t(a, any)]) :: t([a], any) when a: var
+  def all_ok(list), do: all_ok0(list, [])
+
+  defp all_ok0([], res) when is_list(res), do: Enum.reverse(res) |> ok()
+  defp all_ok0([{:ok, v} | tail], res), do: all_ok0(tail, [v | res])
+  defp all_ok0([{:error, e} | _], _), do: {:error, e}
+
+  @doc """
   Transforms `FE.Result` to a `FE.Maybe`.
 
   A `FE.Result` with successful value becomes a `FE.Maybe` with the same value.

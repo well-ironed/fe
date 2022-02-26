@@ -151,6 +151,18 @@ defmodule FE.ResultTest do
     assert Result.oks([Result.error(1), Result.ok(2)]) == [2]
   end
 
+  test "all_ok/1 transforms list of results if all ok to result of list" do
+    assert Result.all_ok([Result.ok(1), Result.ok(2)]) == Result.ok([1, 2])
+  end
+
+  test "all_ok/1 returns first error" do
+    assert Result.all_ok([Result.ok(1), Result.error(2)]) == Result.error(2)
+  end
+
+  test "all_ok/1 on empty list is ok([])" do
+    assert Result.all_ok([]) == Result.ok([])
+  end
+
   test "to_maybe converts ok value to just value" do
     ok = Result.ok("foo")
     assert Result.to_maybe(ok) == Maybe.just("foo")
