@@ -44,4 +44,4 @@ end
 
 ## License
 
-This library is licensed under the [MIT License](LICENSE).
+This library is licensed under the [MIT License](https://github.com/well-ironed/fe/blob/master/LICENSE).

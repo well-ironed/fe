@@ -161,7 +161,7 @@ defmodule FE.Maybe do
       ...> end)
       FE.Maybe.nothing()
   """
-  @spec fold(t(a), [b], (b, a -> t(a))) :: t(a) when a: var, b: var
+  @spec fold(t(a), Enumerable.t(b), (b, a -> t(a))) :: t(a) when a: var, b: var
   def fold(maybe, elems, f) do
     Enum.reduce_while(elems, maybe, fn elem, acc ->
       case and_then(acc, fn value -> f.(elem, value) end) do
@@ -196,10 +196,13 @@ defmodule FE.Maybe do
       ...> end)
       FE.Maybe.nothing()
   """
-  @spec fold([b], (b, a -> t(a))) :: t(a) when a: var, b: var
-  def fold(elems, f)
-  def fold([], _), do: raise(Enum.EmptyError)
-  def fold([head | tail], f), do: fold(just(head), tail, f)
+  @spec fold(Enumerable.t(b), (b, a -> t(a))) :: t(a) when a: var, b: var
+  def fold(elems, f) do
+    case Enum.split(elems, 1) do
+      {[head], tail} -> fold(just(head), tail, f)
+      {[], _} -> raise Enum.EmptyError
+    end
+  end
 
   @doc """
   Extracts only the values from a list of `Maybe.t()`s
@@ -208,13 +211,12 @@ defmodule FE.Maybe do
       iex> FE.Maybe.justs([FE.Maybe.just(:good), FE.Maybe.nothing(), FE.Maybe.just(:better)])
       [:good, :better]
   """
-  @spec justs([t(a)]) :: [a] when a: var
+  @spec justs(Enumerable.t(t(a))) :: [a] when a: var
   def justs(els) do
-    Enum.reduce(els, [], fn
-      {:just, value}, acc -> [value | acc]
-      :nothing, acc -> acc
+    Enum.flat_map(els, fn
+      {:just, value} -> [value]
+      :nothing -> []
     end)
-    |> Enum.reverse()
   end
 
   @doc """

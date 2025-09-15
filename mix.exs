@@ -1,6 +1,8 @@
 defmodule FE.MixProject do
   use Mix.Project
 
+  @version "0.1.5"
+
   def project do
     [
       app: :fe,
@@ -12,7 +14,7 @@ defmodule FE.MixProject do
       preferred_cli_env: [dialyzer: :test],
       source_url: "https://github.com/well-ironed/fe",
       start_permanent: Mix.env() == :prod,
-      version: "0.1.5"
+      version: @version
     ]
   end
 
@@ -25,7 +27,9 @@ defmodule FE.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md"]
+      extras: ["README.md"],
+      source_ref: @version,
+      source_url: "https://github.com/well-ironed/fe"
     ]
   end
 
@@ -42,7 +46,7 @@ defmodule FE.MixProject do
 
   defp deps do
     [
-      {:dialyxir, "~> 0.5.1", only: :test, runtime: false},
+      {:dialyxir, "~> 1.4", only: [:test, :dev], runtime: false},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false}
     ]
   end
