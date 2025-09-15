@@ -220,7 +220,7 @@ defmodule FE.Review do
       ...> end)
       FE.Review.rejected(["it's a ten!"])
   """
-  @spec fold(t(a, b), [c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
+  @spec fold(t(a, b), Enumerable.t(c), (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
   def fold(review, elems, f) do
     Enum.reduce_while(elems, review, fn elem, acc ->
       case and_then(acc, fn value -> f.(elem, value) end) do
@@ -259,9 +259,13 @@ defmodule FE.Review do
       ...> end)
       FE.Review.issues(10, ["six"])
   """
-  @spec fold([c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
-  def fold([], _), do: raise(Enum.EmptyError)
-  def fold([head | tail], f), do: fold(accepted(head), tail, f)
+  @spec fold(Enumerable.t(c), (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
+  def fold(elems, f) do
+    case Enum.split(elems, 1) do
+      {[head], tail} -> fold(accepted(head), tail, f)
+      {[], _} -> raise Enum.EmptyError
+    end
+  end
 
   @doc """
   Transforms `FE.Review` to a `FE.Result`.

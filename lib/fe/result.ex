@@ -149,7 +149,7 @@ defmodule FE.Result do
       ...> end)
       FE.Result.error("it's a ten!")
   """
-  @spec fold(t(a, b), [c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
+  @spec fold(t(a, b), Enumerable.t(c), (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
   def fold(result, elems, f) do
     Enum.reduce_while(elems, result, fn elem, acc ->
       case and_then(acc, fn value -> f.(elem, value) end) do
@@ -178,10 +178,13 @@ defmodule FE.Result do
       ...> end)
       FE.Result.error(:three)
   """
-  @spec fold([c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
-  def fold(elems, f)
-  def fold([], _), do: raise(Enum.EmptyError)
-  def fold([head | tail], f), do: fold(ok(head), tail, f)
+  @spec fold(Enumerable.t(c), (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
+  def fold(elems, f) do
+    case Enum.split(elems, 1) do
+      {[head], tail} -> fold(ok(head), tail, f)
+      {[], _} -> raise Enum.EmptyError
+    end
+  end
 
   @doc """
   Returns the `FE.Result.ok` values from a list of `FE.Result`s.
