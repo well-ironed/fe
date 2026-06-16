@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/elixir:1.7.3
+      - image: cimg/elixir:1.19.5-erlang-27.2.2
         environment:
           MIX_ENV: test
 
