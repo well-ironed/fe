@@ -3,8 +3,8 @@
 with pkgs;
 
 let
-  erlang = beam.interpreters.erlangR22;
-  elixir = beam.packages.erlangR22.elixir_1_10;
+  erlang = beam.interpreters.erlang_28;
+  elixir = beam.packages.erlang_28.elixir_1_18;
 in
 
 mkShell {

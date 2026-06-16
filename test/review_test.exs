@@ -242,8 +242,8 @@ defmodule FE.ReviewTest do
   end
 
   test "to_result converts issues to an error with all the issues" do
-    issues = Review.issues(1, [:one, "one", 'one'])
-    assert Review.to_result(issues) == Result.error([:one, "one", 'one'])
+    issues = Review.issues(1, [:one, "one", ~c"one"])
+    assert Review.to_result(issues) == Result.error([:one, "one", ~c"one"])
   end
 
   test "to_maybe converts accepted value to just value" do
@@ -257,7 +257,7 @@ defmodule FE.ReviewTest do
   end
 
   test "to_maybe converts issues to nothing" do
-    issues = Review.issues(2, [:two, "two", 'TWO'])
+    issues = Review.issues(2, [:two, "two", ~c"TWO"])
     assert Review.to_maybe(issues) == Maybe.nothing()
   end
 end

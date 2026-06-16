@@ -112,6 +112,14 @@ defmodule FE.ResultTest do
            end) == Result.error("it's a six!")
   end
 
+  test "fold/3 over Map.t() works as expected" do
+    folder = fn {k, v}, acc -> Result.ok(acc <> k <> ":" <> v) end
+    # Traversal order is unspecified
+    expected = [Result.ok("a:1b:2"), Result.ok("b:2a:1")]
+    result = Result.fold(Result.ok(""), %{"a" => "1", "b" => "2"}, folder)
+    assert result in expected
+  end
+
   test "fold/2 over an empty list raises an EmptyError" do
     assert_raise Enum.EmptyError, fn -> Result.fold([], &Result.ok(&1 + &2)) end
   end

@@ -120,8 +120,9 @@ defmodule FE.Result do
   def and_then({:ok, value}, f), do: f.(value)
 
   @doc """
-  Folds over provided list of elements applying it and current accumulator
-  to the provided function.
+
+  Folds over the provided Enumerable of elements, applying subsequent elements
+  and the accumulator to the provided function f.
 
   The provided function returns a new accumulator, that should be a `FE.Result`.
   The provided `FE.Result` is the initial accumulator.
@@ -148,8 +149,10 @@ defmodule FE.Result do
       ...> x, y  -> FE.Result.ok(x * y)
       ...> end)
       FE.Result.error("it's a ten!")
+
   """
-  @spec fold(t(a, b), [c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
+  @spec fold(t(a, b), Enumerable.t(c), (c, a -> t(a, b))) :: t(a, b)
+        when a: var, b: var, c: var
   def fold(result, elems, f) do
     Enum.reduce_while(elems, result, fn elem, acc ->
       case and_then(acc, fn value -> f.(elem, value) end) do
@@ -165,6 +168,8 @@ defmodule FE.Result do
 
   Then, fold is executed over the remainder of the provided list.
 
+  The list element must be both in the range and domain of `f`.
+
   ## Examples
       iex> FE.Result.fold([1], fn _, _ -> FE.Result.error(:one) end)
       FE.Result.ok(1)
@@ -178,7 +183,7 @@ defmodule FE.Result do
       ...> end)
       FE.Result.error(:three)
   """
-  @spec fold([c], (c, a -> t(a, b))) :: t(a, b) when a: var, b: var, c: var
+  @spec fold([a], (a, a -> t(a, b))) :: t(a, b) when a: var, b: var
   def fold(elems, f)
   def fold([], _), do: raise(Enum.EmptyError)
   def fold([head | tail], f), do: fold(ok(head), tail, f)

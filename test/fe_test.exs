@@ -4,7 +4,7 @@ defmodule FETest do
   test "FE.id/1 always returns its argument" do
     some_binary = :crypto.strong_rand_bytes(100)
     a_number = System.unique_integer()
-    a_tuple = :erlang.now()
+    a_tuple = {System.unique_integer(), System.unique_integer()}
 
     assert FE.id(some_binary) == some_binary
     assert FE.id(a_number) == a_number
@@ -14,7 +14,7 @@ defmodule FETest do
   test "FE.const(x) creates a function that always returns x" do
     some_binary = :crypto.strong_rand_bytes(100)
     a_number = System.unique_integer()
-    a_tuple = :erlang.now()
+    a_tuple = {System.unique_integer(), System.unique_integer()}
 
     assert FE.const(some_binary).(a_number) == some_binary
     assert FE.const(a_number).(a_tuple) == a_number
