@@ -42,8 +42,8 @@ defmodule FE.MixProject do
 
   defp deps do
     [
-      {:dialyxir, "~> 0.5.1", only: :test, runtime: false},
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+      {:dialyxir, "~> 1.4", only: :test, runtime: false},
+      {:ex_doc, "~> 0.40", only: :dev, runtime: false}
     ]
   end
 end
